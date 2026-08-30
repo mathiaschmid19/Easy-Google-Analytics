@@ -9,7 +9,6 @@ class EGA_Settings {
         add_action('admin_menu', array(__CLASS__, 'menu'));
         add_action('admin_init', array(__CLASS__, 'register_settings'));
         add_action('admin_init', array(__CLASS__, 'register_fields'));
-        add_action('wp_head', array(__CLASS__, 'output'), 10);
     }
 
     public static function menu() {
@@ -169,24 +168,5 @@ class EGA_Settings {
         echo '<label><input type="checkbox" name="for_you_google_analytics_consent_banner_enabled" value="1" ' . checked('1', $enabled, false) . ' /> ';
         echo esc_html__('Enable built-in consent banner', 'for-you-google-analytics') . '</label>';
         echo '<p class="description">' . esc_html__('Only shown when Complianz or Cookiebot isn\'t detected on the page.', 'for-you-google-analytics') . '</p>';
-    }
-
-    // TEMPORARY: relocated here from the pre-refactor plugin file to avoid breaking wp_head output. Removed when Task 4 introduces EGA_Tracking_Output.
-    public static function output() {
-        $ga4_code = get_option('for_you_google_analytics_ga4_code');
-
-        if (!empty($ga4_code)) {
-            ?>
-            <!-- Global site tag (gtag.js) - Google Analytics (GA4) -->
-            <script async src="https://www.googletagmanager.com/gtag/js?id=<?php echo esc_attr($ga4_code); ?>"></script>
-            <script>
-                window.dataLayer = window.dataLayer || [];
-                function gtag() { dataLayer.push(arguments); }
-                gtag('js', new Date());
-
-                gtag('config', '<?php echo esc_js($ga4_code); ?>');
-            </script>
-            <?php
-        }
     }
 }
