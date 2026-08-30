@@ -89,6 +89,16 @@ class EGA_Settings {
                 )
             );
         }
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_excluded_roles',
+            array(
+                'type'              => 'array',
+                'sanitize_callback' => array(__CLASS__, 'sanitize_excluded_roles'),
+                'default'           => array(),
+            )
+        );
     }
 
     public static function sanitize_ga4_code($input) {
@@ -133,6 +143,17 @@ class EGA_Settings {
         return ($input === '1') ? '1' : '';
     }
 
+    public static function sanitize_excluded_roles($input) {
+        if (!is_array($input)) {
+            return array();
+        }
+
+        $valid_roles = array_keys(wp_roles()->get_names());
+        $filtered = array_intersect($input, $valid_roles);
+
+        return array_values($filtered);
+    }
+
     public static function register_fields() {
         add_settings_section(
             'for_you_google_analytics_section',
@@ -169,6 +190,14 @@ class EGA_Settings {
             'for_you_google_analytics_event_tracking',
             'Event Tracking',
             array(__CLASS__, 'event_tracking_field'),
+            'for_you_google_analytics',
+            'for_you_google_analytics_section'
+        );
+
+        add_settings_field(
+            'for_you_google_analytics_excluded_roles',
+            'Exclude Roles',
+            array(__CLASS__, 'excluded_roles_field'),
             'for_you_google_analytics',
             'for_you_google_analytics_section'
         );
@@ -212,5 +241,18 @@ class EGA_Settings {
         }
 
         echo '<p class="description">' . esc_html__('Event tracking requires visitor consent. Enable the consent banner above, or ensure a supported consent management plugin (Complianz or Cookiebot) is active on this site.', 'for-you-google-analytics') . '</p>';
+    }
+
+    public static function excluded_roles_field() {
+        $excluded = get_option('for_you_google_analytics_excluded_roles', array());
+        $roles = get_editable_roles();
+
+        foreach ($roles as $role_slug => $role_info) {
+            $checked = in_array($role_slug, $excluded, true);
+            echo '<label style="display:block;margin-bottom:6px;"><input type="checkbox" name="for_you_google_analytics_excluded_roles[]" value="' . esc_attr($role_slug) . '" ' . checked(true, $checked, false) . ' /> ';
+            echo esc_html(translate_user_role($role_info['name'])) . '</label>';
+        }
+
+        echo '<p class="description">' . esc_html__('Logged-in users with any of the checked roles will not be tracked, and will not see the consent banner or contribute to event-tracking data.', 'for-you-google-analytics') . '</p>';
     }
 }

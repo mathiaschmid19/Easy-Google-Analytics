@@ -20,3 +20,4 @@ delete_option( 'for_you_google_analytics_track_outbound' );
 delete_option( 'for_you_google_analytics_track_downloads' );
 delete_option( 'for_you_google_analytics_track_scroll' );
 delete_option( 'for_you_google_analytics_track_forms' );
+delete_option( 'for_you_google_analytics_excluded_roles' );
