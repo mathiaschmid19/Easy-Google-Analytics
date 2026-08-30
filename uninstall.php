@@ -14,3 +14,4 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 }
 
 delete_option( 'for_you_google_analytics_ga4_code' );
+delete_option( 'for_you_google_analytics_gtm_id' );

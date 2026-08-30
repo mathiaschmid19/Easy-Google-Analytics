@@ -26,7 +26,10 @@ class EGA_Settings {
         ?>
         <div class="wrap">
             <h2>Google Analytics (GA4) Settings</h2>
-            <?php settings_errors('for_you_google_analytics_ga4_code'); ?>
+            <?php
+            settings_errors('for_you_google_analytics_ga4_code');
+            settings_errors('for_you_google_analytics_gtm_id');
+            ?>
             <form method="post" action="options.php">
                 <?php
                 settings_fields('for_you_google_analytics_options');
@@ -45,6 +48,16 @@ class EGA_Settings {
             array(
                 'type'              => 'string',
                 'sanitize_callback' => array(__CLASS__, 'sanitize_ga4_code'),
+                'default'           => '',
+            )
+        );
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_gtm_id',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => array(__CLASS__, 'sanitize_gtm_id'),
                 'default'           => '',
             )
         );
@@ -69,6 +82,25 @@ class EGA_Settings {
         return $input;
     }
 
+    public static function sanitize_gtm_id($input) {
+        $input = strtoupper(sanitize_text_field($input));
+
+        if (empty($input)) {
+            return '';
+        }
+
+        if (!preg_match('/^GTM-[A-Z0-9]+$/', $input)) {
+            add_settings_error(
+                'for_you_google_analytics_gtm_id',
+                'invalid_gtm_id',
+                __('Invalid GTM Container ID. It must be in the format GTM-XXXXXXX.', 'for-you-google-analytics')
+            );
+            return get_option('for_you_google_analytics_gtm_id', '');
+        }
+
+        return $input;
+    }
+
     public static function register_fields() {
         add_settings_section(
             'for_you_google_analytics_section',
@@ -84,6 +116,14 @@ class EGA_Settings {
             'for_you_google_analytics',
             'for_you_google_analytics_section'
         );
+
+        add_settings_field(
+            'for_you_google_analytics_gtm_id',
+            'GTM Container ID',
+            array(__CLASS__, 'gtm_id_field'),
+            'for_you_google_analytics',
+            'for_you_google_analytics_section'
+        );
     }
 
     public static function section_callback() {
@@ -94,6 +134,12 @@ class EGA_Settings {
         $ga4_code = get_option('for_you_google_analytics_ga4_code');
         echo '<input type="text" name="for_you_google_analytics_ga4_code" value="' . esc_attr($ga4_code) . '" placeholder="G-XXXXXXXXXX" class="regular-text" />';
         echo '<p class="description">' . esc_html__('Format: G-XXXXXXXXXX', 'for-you-google-analytics') . '</p>';
+    }
+
+    public static function gtm_id_field() {
+        $gtm_id = get_option('for_you_google_analytics_gtm_id');
+        echo '<input type="text" name="for_you_google_analytics_gtm_id" value="' . esc_attr($gtm_id) . '" placeholder="GTM-XXXXXXX" class="regular-text" />';
+        echo '<p class="description">' . esc_html__('Format: GTM-XXXXXXX. If set, GA4 is typically configured inside GTM instead of loading separately.', 'for-you-google-analytics') . '</p>';
     }
 
     // TEMPORARY: relocated here from the pre-refactor plugin file to avoid breaking wp_head output. Removed when Task 4 introduces EGA_Tracking_Output.
