@@ -70,6 +70,25 @@ class EGA_Settings {
                 'default'           => '',
             )
         );
+
+        $checkbox_options = array(
+            'for_you_google_analytics_track_outbound',
+            'for_you_google_analytics_track_downloads',
+            'for_you_google_analytics_track_scroll',
+            'for_you_google_analytics_track_forms',
+        );
+
+        foreach ($checkbox_options as $option_name) {
+            register_setting(
+                'for_you_google_analytics_options',
+                $option_name,
+                array(
+                    'type'              => 'string',
+                    'sanitize_callback' => array(__CLASS__, 'sanitize_checkbox'),
+                    'default'           => '',
+                )
+            );
+        }
     }
 
     public static function sanitize_ga4_code($input) {
@@ -145,6 +164,14 @@ class EGA_Settings {
             'for_you_google_analytics',
             'for_you_google_analytics_section'
         );
+
+        add_settings_field(
+            'for_you_google_analytics_event_tracking',
+            'Event Tracking',
+            array(__CLASS__, 'event_tracking_field'),
+            'for_you_google_analytics',
+            'for_you_google_analytics_section'
+        );
     }
 
     public static function section_callback() {
@@ -168,5 +195,20 @@ class EGA_Settings {
         echo '<label><input type="checkbox" name="for_you_google_analytics_consent_banner_enabled" value="1" ' . checked('1', $enabled, false) . ' /> ';
         echo esc_html__('Enable built-in consent banner', 'for-you-google-analytics') . '</label>';
         echo '<p class="description">' . esc_html__('Only shown when Complianz or Cookiebot isn\'t detected on the page.', 'for-you-google-analytics') . '</p>';
+    }
+
+    public static function event_tracking_field() {
+        $options = array(
+            'for_you_google_analytics_track_outbound'  => __('Outbound link clicks', 'for-you-google-analytics'),
+            'for_you_google_analytics_track_downloads' => __('File download clicks', 'for-you-google-analytics'),
+            'for_you_google_analytics_track_scroll'    => __('Scroll depth', 'for-you-google-analytics'),
+            'for_you_google_analytics_track_forms'     => __('Form submissions', 'for-you-google-analytics'),
+        );
+
+        foreach ($options as $option_name => $label) {
+            $value = get_option($option_name);
+            echo '<label style="display:block;margin-bottom:6px;"><input type="checkbox" name="' . esc_attr($option_name) . '" value="1" ' . checked('1', $value, false) . ' /> ';
+            echo esc_html($label) . '</label>';
+        }
     }
 }
