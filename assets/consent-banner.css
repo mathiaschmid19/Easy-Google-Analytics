@@ -1,0 +1,52 @@
+#ega-consent-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 999999;
+    background: #1e1e1e;
+    color: #fff;
+    padding: 16px 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
+}
+
+#ega-consent-banner p {
+    margin: 0;
+    flex: 1 1 300px;
+}
+
+#ega-consent-banner .ega-consent-actions {
+    display: flex;
+    gap: 8px;
+    flex: 0 0 auto;
+}
+
+#ega-consent-banner button {
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    font-size: 14px;
+}
+
+#ega-consent-accept {
+    background: #2271b1;
+    color: #fff;
+}
+
+#ega-consent-reject {
+    background: transparent;
+    color: #fff;
+    border: 1px solid #fff;
+}
+
+#ega-consent-banner[hidden] {
+    display: none;
+}
