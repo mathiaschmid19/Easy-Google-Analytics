@@ -61,6 +61,16 @@ class EGA_Settings {
                 'default'           => '',
             )
         );
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_consent_banner_enabled',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => array(__CLASS__, 'sanitize_checkbox'),
+                'default'           => '',
+            )
+        );
     }
 
     public static function sanitize_ga4_code($input) {
@@ -101,6 +111,10 @@ class EGA_Settings {
         return $input;
     }
 
+    public static function sanitize_checkbox($input) {
+        return ($input === '1') ? '1' : '';
+    }
+
     public static function register_fields() {
         add_settings_section(
             'for_you_google_analytics_section',
@@ -124,6 +138,14 @@ class EGA_Settings {
             'for_you_google_analytics',
             'for_you_google_analytics_section'
         );
+
+        add_settings_field(
+            'for_you_google_analytics_consent_banner_enabled',
+            'Consent Banner',
+            array(__CLASS__, 'consent_banner_field'),
+            'for_you_google_analytics',
+            'for_you_google_analytics_section'
+        );
     }
 
     public static function section_callback() {
@@ -140,6 +162,13 @@ class EGA_Settings {
         $gtm_id = get_option('for_you_google_analytics_gtm_id');
         echo '<input type="text" name="for_you_google_analytics_gtm_id" value="' . esc_attr($gtm_id) . '" placeholder="GTM-XXXXXXX" class="regular-text" />';
         echo '<p class="description">' . esc_html__('Format: GTM-XXXXXXX. If set, GA4 is typically configured inside GTM instead of loading separately.', 'for-you-google-analytics') . '</p>';
+    }
+
+    public static function consent_banner_field() {
+        $enabled = get_option('for_you_google_analytics_consent_banner_enabled');
+        echo '<label><input type="checkbox" name="for_you_google_analytics_consent_banner_enabled" value="1" ' . checked('1', $enabled, false) . ' /> ';
+        echo esc_html__('Enable built-in consent banner', 'for-you-google-analytics') . '</label>';
+        echo '<p class="description">' . esc_html__('Only shown when Complianz or Cookiebot isn\'t detected on the page.', 'for-you-google-analytics') . '</p>';
     }
 
     // TEMPORARY: relocated here from the pre-refactor plugin file to avoid breaking wp_head output. Removed when Task 4 introduces EGA_Tracking_Output.
