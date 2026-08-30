@@ -12,3 +12,5 @@
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 	exit;
 }
+
+delete_option( 'for_you_google_analytics_ga4_code' );

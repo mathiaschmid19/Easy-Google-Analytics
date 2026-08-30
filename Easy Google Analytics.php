@@ -5,6 +5,7 @@
     Description: Adds your Google Analytics tracking code to the <head> of your theme.
     Author: Amine Ouhannou
     Version: 1.2
+    Text Domain: for-you-google-analytics
  */
 
 if (!defined('WPINC')) {
@@ -28,6 +29,7 @@ function for_you_google_analytics_page() {
     ?>
     <div class="wrap">
         <h2>Google Analytics (GA4) Settings</h2>
+        <?php settings_errors('for_you_google_analytics_ga4_code'); ?>
         <form method="post" action="options.php">
             <?php
             settings_fields('for_you_google_analytics_options');
@@ -41,9 +43,37 @@ function for_you_google_analytics_page() {
 
 // Register plugin settings
 function for_you_google_analytics_settings() {
-    register_setting('for_you_google_analytics_options', 'for_you_google_analytics_ga4_code');
+    register_setting(
+        'for_you_google_analytics_options',
+        'for_you_google_analytics_ga4_code',
+        array(
+            'type'              => 'string',
+            'sanitize_callback' => 'for_you_google_analytics_sanitize_ga4_code',
+            'default'           => '',
+        )
+    );
 }
 add_action('admin_init', 'for_you_google_analytics_settings');
+
+// Sanitize and validate the GA4 measurement ID (expected format: G-XXXXXXXXXX)
+function for_you_google_analytics_sanitize_ga4_code($input) {
+    $input = strtoupper(sanitize_text_field($input));
+
+    if (empty($input)) {
+        return '';
+    }
+
+    if (!preg_match('/^G-[A-Z0-9]+$/', $input)) {
+        add_settings_error(
+            'for_you_google_analytics_ga4_code',
+            'invalid_ga4_code',
+            __('Invalid GA4 tracking code. It must be in the format G-XXXXXXXXXX.', 'for-you-google-analytics')
+        );
+        return get_option('for_you_google_analytics_ga4_code', '');
+    }
+
+    return $input;
+}
 
 // Add settings sections and fields
 function for_you_google_analytics_settings_fields() {
@@ -71,7 +101,8 @@ function for_you_google_analytics_section_callback() {
 
 function for_you_google_analytics_ga4_code_callback() {
     $ga4_code = get_option('for_you_google_analytics_ga4_code');
-    echo '<input type="text" name="for_you_google_analytics_ga4_code" value="' . esc_attr($ga4_code) . '" />';
+    echo '<input type="text" name="for_you_google_analytics_ga4_code" value="' . esc_attr($ga4_code) . '" placeholder="G-XXXXXXXXXX" class="regular-text" />';
+    echo '<p class="description">' . esc_html__('Format: G-XXXXXXXXXX', 'for-you-google-analytics') . '</p>';
 }
 
 // Output the selected GA4 tracking code in the <head> section
@@ -87,7 +118,7 @@ function for_you_google_analytics_output() {
             function gtag() { dataLayer.push(arguments); }
             gtag('js', new Date());
 
-            gtag('config', '<?php echo esc_attr($ga4_code); ?>');
+            gtag('config', '<?php echo esc_js($ga4_code); ?>');
         </script>
         <?php
     }
