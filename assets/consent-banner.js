@@ -26,7 +26,13 @@
     }
 
     function detectComplianz() {
-        return typeof window.complianz !== 'undefined' || getCookie('cmplz_marketing') !== null || getCookie('cmplz_statistics') !== null;
+        // Only trust the window.complianz global as a signal that Complianz is
+        // actually active. cmplz_* cookies can persist long after Complianz has
+        // been uninstalled (they carry long expiries), which previously caused
+        // this function to keep returning true forever, permanently suppressing
+        // the fallback banner with no way left to grant consent. Complianz, when
+        // actually active, always defines this global on page load.
+        return typeof window.complianz !== 'undefined';
     }
 
     function detectCookiebot() {

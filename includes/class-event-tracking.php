@@ -23,6 +23,13 @@ class EGA_Event_Tracking {
             return;
         }
 
+        // Known limitation: tracking.js is enqueued whenever event tracking is
+        // configured, even if nothing can ever grant consent (e.g. the built-in
+        // consent banner is disabled and no CMP is installed). Server-side PHP
+        // cannot reliably detect a client-side CMP (Complianz/Cookiebot), so this
+        // is intentionally not gated here — see the "Enable event tracking"
+        // description in EGA_Settings::event_tracking_field() for the
+        // admin-facing guidance instead.
         wp_enqueue_script(
             'ega-tracking',
             EGA_PLUGIN_URL . 'assets/tracking.js',
@@ -31,6 +38,10 @@ class EGA_Event_Tracking {
             true
         );
 
+        // wp_localize_script casts every scalar value to a string before JSON-encoding,
+        // so JS receives "1"/"" here, not real booleans true/false. Consuming code in
+        // assets/tracking.js must use truthy checks (e.g. `if (config.scroll)`), never
+        // strict comparisons like `config.downloads === false`.
         wp_localize_script('ega-tracking', 'easyGA4TrackingConfig', array(
             'outbound'           => get_option('for_you_google_analytics_track_outbound') === '1',
             'downloads'          => get_option('for_you_google_analytics_track_downloads') === '1',

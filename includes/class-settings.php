@@ -210,5 +210,7 @@ class EGA_Settings {
             echo '<label style="display:block;margin-bottom:6px;"><input type="checkbox" name="' . esc_attr($option_name) . '" value="1" ' . checked('1', $value, false) . ' /> ';
             echo esc_html($label) . '</label>';
         }
+
+        echo '<p class="description">' . esc_html__('Event tracking requires visitor consent. Enable the consent banner above, or ensure a supported consent management plugin (Complianz or Cookiebot) is active on this site.', 'for-you-google-analytics') . '</p>';
     }
 }
