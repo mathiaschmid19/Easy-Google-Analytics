@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Add role-based tracking exclusion, convert `EGA_Tracking_Output`'s inline `<script>` echoes to `wp_enqueue_script`/`wp_localize_script`, fix `uninstall.php`'s missing trailing newline, and add WordPress.org-format `readme.txt` plus missing plugin header metadata.
+**Goal:** Add role-based tracking exclusion, convert `EGA_Tracking_Output`'s inline `<script>` echoes to `wp_enqueue_script`/`wp_localize_script`, fix `uninstall.php`'s missing trailing newline and stale boilerplate header, centralize the version number behind a single `EGA_VERSION` constant, and add WordPress.org-format `readme.txt` plus missing plugin header metadata.
 
 **Architecture:** A new `EGA_Tracking_Output::is_user_excluded()` check is added as an explicit second condition at the three existing output-gating call sites (not folded into `is_configured()`, to avoid silently changing an interface three classes already depend on). `output_consent_defaults()` and `output_tracking_scripts()` are converted from `echo`-based inline script blocks to `wp_enqueue_script`/`wp_localize_script`/`wp_add_inline_script`, matching the pattern `EGA_Consent` and `EGA_Event_Tracking` already use, with the two `wp_head` hooks kept at their existing priorities (1 and 10).
 
@@ -16,7 +16,7 @@
 - `EGA_Tracking_Output::is_user_excluded()` returns `false` for logged-out visitors unconditionally (no role to match).
 - Exclusion is checked as an explicit second condition at each of the three existing gate sites (`EGA_Tracking_Output`'s two `wp_head` methods, `EGA_Consent::banner_enabled()`, `EGA_Event_Tracking::enqueue()`) — `is_configured()` itself is never renamed or have its meaning changed.
 - The two `wp_head` hooks in `EGA_Tracking_Output::init()` keep their existing priorities: consent defaults at `1`, tracking scripts at `10`.
-- All new/modified script enqueues use version string `'2.1'` (bump from `'2.0'` used by v2.0's assets, since this plan is a plugin-version bump).
+- All new/modified script enqueues use the `EGA_VERSION` constant (value `'2.1'`, a bump from `'2.0'` used by v2.0's assets, since this plan is a plugin-version bump) instead of a literal version string — defined once in `Easy Google Analytics.php`, consumed everywhere else. The two external-URL handles (`ega-gtm-container`, `ega-gtag-js`) are the sole exception, passing `null` per their existing documented rationale.
 - Text domain for all user-facing strings: `for-you-google-analytics`.
 - `uninstall.php` must delete the new option and end with a trailing newline byte.
 - No new PHP dependencies, no Composer, no build step for JS.
@@ -262,7 +262,7 @@ In `includes/class-tracking-output.php`, replace the entire method:
             'ega-consent-defaults',
             EGA_PLUGIN_URL . 'assets/consent-defaults.js',
             array(),
-            '2.1',
+            EGA_VERSION,
             false
         );
 
@@ -359,7 +359,7 @@ In `includes/class-tracking-output.php`, replace the entire method:
                 'ega-gtag-loader',
                 EGA_PLUGIN_URL . 'assets/gtag-loader.js',
                 array('ega-gtag-js'),
-                '2.1',
+                EGA_VERSION,
                 false
             );
             wp_localize_script('ega-gtag-loader', 'easyGA4Loader', array(
@@ -389,19 +389,35 @@ git commit -m "Convert GA4/GTM tracking-script output to wp_enqueue_script"
 
 ---
 
-### Task 5: `uninstall.php` trailing newline and version/header metadata
+### Task 5: `uninstall.php` cleanup, `EGA_VERSION` constant, and header metadata
 
 **Files:**
 - Modify: `uninstall.php`
 - Modify: `Easy Google Analytics.php`
+- Modify: `includes/class-settings.php`
+- Modify: `includes/class-consent.php`
+- Modify: `includes/class-event-tracking.php`
 
 **Interfaces:**
 - Consumes: nothing
-- Produces: nothing consumed by later tasks (Task 6 creates `readme.txt` independently, referencing the same version number this task sets in the plugin header, but does not read this file programmatically)
+- Produces: `EGA_VERSION` constant (defined in `Easy Google Analytics.php`, alongside `EGA_PLUGIN_DIR`/`EGA_PLUGIN_URL`) — consumed by every `wp_enqueue_script`/`wp_enqueue_style` call in the plugin, including Task 3/4's new calls in `class-tracking-output.php` (those two tasks already reference `EGA_VERSION` directly; this task must land before or alongside them so the constant exists, or after — PHP constants are resolved at runtime, not edit time, so file-edit order across tasks does not matter here, only that this task's definition and Task 3/4's usages both land before final verification). Nothing consumed by later tasks (Task 6 creates `readme.txt` independently, referencing the same version number this task sets in the plugin header, but does not read this file programmatically).
 
-- [ ] **Step 1: Verify/fix `uninstall.php`'s trailing newline**
+- [ ] **Step 1: Define `EGA_VERSION` in `Easy Google Analytics.php`**
 
-Read the current `uninstall.php` in full. If the file's last line (`delete_option( 'for_you_google_analytics_excluded_roles' );` after Task 1's edit) is not followed by a trailing newline character, add one. Concretely: ensure the file ends with `\n` after the final `delete_option(...)` statement, not with the statement as the literal last byte of the file.
+Change:
+
+```php
+define('EGA_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('EGA_PLUGIN_URL', plugin_dir_url(__FILE__));
+```
+
+to:
+
+```php
+define('EGA_VERSION', '2.1');
+define('EGA_PLUGIN_DIR', plugin_dir_path(__FILE__));
+define('EGA_PLUGIN_URL', plugin_dir_url(__FILE__));
+```
 
 - [ ] **Step 2: Bump plugin version and add missing headers**
 
@@ -435,15 +451,63 @@ to:
  */
 ```
 
-- [ ] **Step 3: Manually verify**
+Note: WordPress's plugin-header parser reads this comment block as plain text (it does not execute PHP to get the version), so `Version: 2.1` here is a separate literal from the `EGA_VERSION` PHP constant defined in Step 1 — both must say `2.1`, but nothing enforces that automatically. This is an accepted, documented duplication (the plugin-header format cannot reference a PHP constant), not an oversight; every other version literal in the codebase (enqueues, admin UI text) reads `EGA_VERSION` instead, which collapses the sync problem from "many places" to "these two."
 
-Read the final `uninstall.php` and confirm it ends with a newline byte (most editors/Read tools show this as the file simply not having a warning about a missing final newline — if using a shell, `tail -c 1 uninstall.php | xxd` would show `0a`, the newline byte; state which method was used to confirm). Read the final plugin header and confirm all four new lines are present with exact WordPress-recognized header keys (`Requires at least`, `Requires PHP`, `License`, `License URI` — these exact capitalizations/spacings are what WordPress's plugin-header parser looks for).
+- [ ] **Step 3: Replace remaining literal version strings with `EGA_VERSION`**
 
-- [ ] **Step 4: Commit**
+In `includes/class-settings.php`, `enqueue_admin_assets()`: replace both `'2.1'` literals (the `admin.css` and `admin.js` enqueues) with `EGA_VERSION`.
+
+In `includes/class-consent.php`, `enqueue()`: replace both `'2.0'` literals (the `consent-banner.css` and `consent-banner.js` enqueues) with `EGA_VERSION`.
+
+In `includes/class-event-tracking.php`, `enqueue()`: replace the `'2.0'` literal (the `tracking.js` enqueue) with `EGA_VERSION`.
+
+In `includes/class-settings.php`, `render_page()`: change the hardcoded version badge from:
+
+```php
+<span class="ega-version-tag">Version 2.0</span>
+```
+
+to:
+
+```php
+<span class="ega-version-tag"><?php echo esc_html(sprintf(__('Version %s', 'for-you-google-analytics'), EGA_VERSION)); ?></span>
+```
+
+- [ ] **Step 4: Verify/fix `uninstall.php`'s trailing newline and header comment**
+
+Read the current `uninstall.php` in full. Replace the leftover WordPress-Plugin-Boilerplate header comment:
+
+```php
+ /* For more information, see the following discussion:
+ * https://github.com/tommcfarlin/WordPress-Plugin-Boilerplate/pull/123#issuecomment-28541913
+ *
+ * @link       #
+ * @since      1.0.0
+ *
+ * @package    Plugin_Name
+ */
+```
+
+with:
+
+```php
+/**
+ * Fired when the plugin is uninstalled. Removes all options this plugin
+ * has ever stored, including options from earlier plugin versions.
+ */
+```
+
+If the file's last line (`delete_option( 'for_you_google_analytics_excluded_roles' );` after Task 1's edit) is not followed by a trailing newline character, add one. Concretely: ensure the file ends with `\n` after the final `delete_option(...)` statement, not with the statement as the literal last byte of the file.
+
+- [ ] **Step 5: Manually verify**
+
+Read the final `uninstall.php` and confirm it ends with a newline byte (most editors/Read tools show this as the file simply not having a warning about a missing final newline — if using a shell, `tail -c 1 uninstall.php | xxd` would show `0a`, the newline byte; state which method was used to confirm) and that the boilerplate comment is gone with no dangling reference to `Plugin_Name`/`tommcfarlin`. Read the final plugin header and confirm all four new lines are present with exact WordPress-recognized header keys (`Requires at least`, `Requires PHP`, `License`, `License URI`). Grep the whole plugin directory for the literal strings `'2.0'` and `'2.1'` inside `wp_enqueue_script`/`wp_enqueue_style` calls specifically — confirm zero remain outside of the `EGA_VERSION` definition itself and the two external-URL handles' documented `null`-version exception (Task 4). Confirm the admin settings page (`render_page()`) no longer has a hardcoded `"Version 2.0"` string anywhere.
+
+- [ ] **Step 6: Commit**
 
 ```bash
-git add uninstall.php "Easy Google Analytics.php"
-git commit -m "Fix uninstall.php trailing newline; bump version and add license/PHP headers"
+git add uninstall.php "Easy Google Analytics.php" includes/class-settings.php includes/class-consent.php includes/class-event-tracking.php
+git commit -m "Centralize version behind EGA_VERSION constant; fix uninstall.php header and trailing newline; add license/PHP headers"
 ```
 
 ---
@@ -518,8 +582,8 @@ git commit -m "Add WordPress.org-format readme.txt"
 
 ## Self-Review Notes
 
-**Spec coverage:** Role-exclusion settings field (Task 1) ✓, `is_user_excluded()` + wiring into all three gate sites (Task 2) ✓, consent-defaults enqueue conversion (Task 3) ✓, GA4/GTM tracking-scripts enqueue conversion (Task 4) ✓, `uninstall.php` trailing newline + new option cleanup (Tasks 1 & 5) ✓, plugin header metadata (Task 5) ✓, `readme.txt` (Task 6) ✓. File structure matches the spec exactly: `assets/consent-defaults.js` (Task 3), `assets/gtag-loader.js` (Task 4), `readme.txt` (Task 6), and the five modified files (`class-settings.php`, `class-tracking-output.php`, `class-consent.php`, `class-event-tracking.php`, `uninstall.php`, `Easy Google Analytics.php`).
+**Spec coverage:** Role-exclusion settings field (Task 1) ✓, `is_user_excluded()` + wiring into all three gate sites (Task 2) ✓, consent-defaults enqueue conversion (Task 3) ✓, GA4/GTM tracking-scripts enqueue conversion (Task 4) ✓, `uninstall.php` trailing newline + boilerplate header cleanup + new option cleanup (Tasks 1 & 5) ✓, `EGA_VERSION` constant centralization across all enqueue call sites and the admin UI version badge (Task 5) ✓, plugin header metadata (Task 5) ✓, `readme.txt` (Task 6) ✓. File structure matches the spec exactly: `assets/consent-defaults.js` (Task 3), `assets/gtag-loader.js` (Task 4), `readme.txt` (Task 6), and the modified files (`class-settings.php`, `class-tracking-output.php`, `class-consent.php`, `class-event-tracking.php`, `uninstall.php`, `Easy Google Analytics.php`).
 
-**Placeholder scan:** No TBD/TODO markers. Every step has complete, runnable code or an explicit verification procedure (e.g. Task 5 Step 3's `tail -c 1 | xxd` check for the trailing-newline byte, rather than a vague "make sure it's fixed").
+**Placeholder scan:** No TBD/TODO markers. Every step has complete, runnable code or an explicit verification procedure (e.g. Task 5 Step 5's `tail -c 1 | xxd` check for the trailing-newline byte, and its grep for stray `'2.0'`/`'2.1'` literals, rather than a vague "make sure it's fixed").
 
-**Type/naming consistency:** `is_user_excluded()` is defined once (Task 2, on `EGA_Tracking_Output`) and called identically (`EGA_Tracking_Output::is_user_excluded()` or `self::is_user_excluded()` from within the same class) at all three consuming sites across Tasks 2-4. Option name `for_you_google_analytics_excluded_roles` matches character-for-character between Task 1's `register_setting`/field-rendering and Task 2's `get_option` call. Script handles introduced in Tasks 3-4 (`ega-consent-defaults`, `ega-gtm-container`, `ega-gtag-js`, `ega-gtag-loader`) are each used exactly once, with no naming collisions against v2.0's existing handles (`ega-consent-banner`, `ega-tracking`). Version string `'2.1'` used consistently across all new/modified enqueue calls in Tasks 3-4 and the plugin header/readme in Tasks 5-6.
+**Type/naming consistency:** `is_user_excluded()` is defined once (Task 2, on `EGA_Tracking_Output`) and called identically (`EGA_Tracking_Output::is_user_excluded()` or `self::is_user_excluded()` from within the same class) at all three consuming sites across Tasks 2-4. Option name `for_you_google_analytics_excluded_roles` matches character-for-character between Task 1's `register_setting`/field-rendering and Task 2's `get_option` call. Script handles introduced in Tasks 3-4 (`ega-consent-defaults`, `ega-gtm-container`, `ega-gtag-js`, `ega-gtag-loader`) are each used exactly once, with no naming collisions against v2.0's existing handles (`ega-consent-banner`, `ega-tracking`). `EGA_VERSION` (value `'2.1'`) is defined exactly once (Task 5, `Easy Google Analytics.php`) and referenced by name — never re-literalized — at every enqueue call site across Tasks 3, 4, and 5, plus the admin UI version badge; the plugin-header `Version: 2.1` comment and `readme.txt`'s `Stable tag: 2.1` remain separate literals by necessity (WordPress's header/readme parsers read plain text, not PHP), documented as the one accepted exception in Task 5 Step 2.

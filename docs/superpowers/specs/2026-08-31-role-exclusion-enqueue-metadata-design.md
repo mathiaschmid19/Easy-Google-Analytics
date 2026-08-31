@@ -14,10 +14,22 @@ Four gaps remain after v2.0:
    plugin and harder to cache-bust, dequeue, or audit via WordPress's script
    registry.
 3. `uninstall.php` has no trailing newline (cosmetic, flagged by common
-   linters, already noted as a deferred minor in the v2.0 final review).
+   linters, already noted as a deferred minor in the v2.0 final review) and
+   still carries its original WordPress-Plugin-Boilerplate header comment
+   (dead `@since 1.0.0` / `Plugin_Name` package tag) instead of a comment
+   describing this plugin.
 4. There is no `readme.txt` in WordPress.org format, and the main plugin
    file's header is missing `Requires PHP`, `Requires at least`, `License`,
    and `License URI`.
+5. The version number `2.1` is duplicated as a literal string in three
+   places that must be kept in sync by hand: the plugin file header
+   (`Version: 2.1`), every `wp_enqueue_script`/`wp_enqueue_style` call's
+   `$ver` argument across `class-settings.php`, `class-consent.php`,
+   `class-event-tracking.php`, and this plan's new `class-tracking-output.php`
+   enqueues, and the hardcoded `"Version 2.0"` text printed in the admin
+   settings page header banner (`class-settings.php`, `render_page()`) —
+   already caught out of sync once during this same plan's development
+   (settings enqueues were bumped to `'2.1'` before the plugin header was).
 
 ## Non-goals
 
@@ -44,12 +56,12 @@ readme.txt                   WordPress.org-format readme
 
 Modified files:
 ```
-includes/class-settings.php        role-exclusion checkboxes + sanitizer
-includes/class-tracking-output.php enqueue conversion, is_user_excluded()
-includes/class-consent.php         exclusion check added to banner_enabled()
-includes/class-event-tracking.php  exclusion check added to enqueue()'s gate
-uninstall.php                      delete new option, add trailing newline
-Easy Google Analytics.php          add Requires PHP / License headers
+includes/class-settings.php        role-exclusion checkboxes + sanitizer; EGA_VERSION in enqueues and header banner
+includes/class-tracking-output.php enqueue conversion, is_user_excluded(); EGA_VERSION in enqueues
+includes/class-consent.php         exclusion check added to banner_enabled(); EGA_VERSION in enqueues
+includes/class-event-tracking.php  exclusion check added to enqueue()'s gate; EGA_VERSION in enqueue
+uninstall.php                      delete new option, add trailing newline, replace boilerplate header comment
+Easy Google Analytics.php          add Requires PHP / License headers; define EGA_VERSION constant
 ```
 
 No files are removed. The GTM/GA4 `<script src="...">` tags (the external
@@ -207,7 +219,11 @@ contract other tasks/tests may rely on.
 **`uninstall.php`**: add the one new `delete_option` line; ensure the file
 ends with a trailing newline (many editors strip trailing newlines on
 save — the fix step must explicitly verify the byte is present, not just
-assume the edit tool added it).
+assume the edit tool added it). Also replace the leftover
+WordPress-Plugin-Boilerplate header comment (generic `@package Plugin_Name`,
+`@since 1.0.0`, a `#` placeholder `@link`) with a short comment naming this
+plugin, since the boilerplate text was never filled in for this project and
+has no factual content about Easy Google Analytics.
 
 **`Easy Google Analytics.php` header**, adding to the existing block:
 ```
@@ -216,6 +232,20 @@ Requires PHP: 7.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 ```
+
+**Version constant (`EGA_VERSION`)**: defined once in `Easy Google Analytics.php`
+alongside `EGA_PLUGIN_DIR`/`EGA_PLUGIN_URL`, as `define('EGA_VERSION', '2.1')`.
+Every `wp_enqueue_script`/`wp_enqueue_style` call in the plugin (existing
+calls in `class-settings.php`, `class-consent.php`, `class-event-tracking.php`,
+plus this plan's new calls in `class-tracking-output.php`) uses `EGA_VERSION`
+instead of a literal `'2.0'`/`'2.1'` string for its `$ver` argument. The
+admin settings page header banner (`class-settings.php`, `render_page()`)
+also switches its hardcoded `"Version 2.0"` text to
+`sprintf('Version %s', EGA_VERSION)`. This does not apply to the two
+external-URL script handles in the enqueue refactor below
+(`ega-gtm-container`, `ega-gtag-js`) — those intentionally pass `null` for
+`$ver` per the existing rationale (Google's endpoint, not this plugin's
+asset, so no local version string applies).
 
 **`readme.txt`** (new, WordPress.org format):
 ```
