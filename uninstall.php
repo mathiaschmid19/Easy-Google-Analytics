@@ -1,11 +1,7 @@
 <?php
- /* For more information, see the following discussion:
- * https://github.com/tommcfarlin/WordPress-Plugin-Boilerplate/pull/123#issuecomment-28541913
- *
- * @link       #
- * @since      1.0.0
- *
- * @package    Plugin_Name
+/**
+ * Fired when the plugin is uninstalled. Removes all options this plugin
+ * has ever stored, including options from earlier plugin versions.
  */
 
 // If uninstall not called from WordPress, then exit.

@@ -48,6 +48,7 @@ class EGA_Consent {
                 <button type="button" id="ega-consent-accept"><?php esc_html_e('Accept', 'for-you-google-analytics'); ?></button>
             </div>
         </div>
+        <button type="button" id="ega-consent-manage" hidden><?php esc_html_e('Manage cookie preferences', 'for-you-google-analytics'); ?></button>
         <?php
     }
 }

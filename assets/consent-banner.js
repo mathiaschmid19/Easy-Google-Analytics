@@ -57,36 +57,59 @@
     }
 
     function initFallbackBanner() {
-        var existing = getCookie(COOKIE_NAME);
-        if (existing === 'granted') {
-            updateConsent(true);
-            return;
-        }
-        if (existing === 'denied') {
-            return;
-        }
-
         var banner = document.getElementById('ega-consent-banner');
+        var manageBtn = document.getElementById('ega-consent-manage');
         if (!banner) {
             return;
         }
 
-        banner.removeAttribute('hidden');
-
         var acceptBtn = document.getElementById('ega-consent-accept');
         var rejectBtn = document.getElementById('ega-consent-reject');
 
-        acceptBtn.addEventListener('click', function () {
-            setCookie(COOKIE_NAME, 'granted');
-            updateConsent(true);
+        function showBanner() {
+            banner.removeAttribute('hidden');
+            if (manageBtn) {
+                manageBtn.setAttribute('hidden', 'hidden');
+            }
+        }
+
+        function recordChoice(granted) {
+            setCookie(COOKIE_NAME, granted ? 'granted' : 'denied');
+            updateConsent(granted);
             banner.setAttribute('hidden', 'hidden');
+            if (manageBtn) {
+                manageBtn.removeAttribute('hidden');
+            }
+        }
+
+        acceptBtn.addEventListener('click', function () {
+            recordChoice(true);
         });
 
         rejectBtn.addEventListener('click', function () {
-            setCookie(COOKIE_NAME, 'denied');
-            updateConsent(false);
-            banner.setAttribute('hidden', 'hidden');
+            recordChoice(false);
         });
+
+        if (manageBtn) {
+            manageBtn.addEventListener('click', showBanner);
+        }
+
+        var existing = getCookie(COOKIE_NAME);
+        if (existing === 'granted') {
+            updateConsent(true);
+            if (manageBtn) {
+                manageBtn.removeAttribute('hidden');
+            }
+            return;
+        }
+        if (existing === 'denied') {
+            if (manageBtn) {
+                manageBtn.removeAttribute('hidden');
+            }
+            return;
+        }
+
+        showBanner();
     }
 
     document.addEventListener('DOMContentLoaded', function () {
