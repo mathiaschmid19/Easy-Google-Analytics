@@ -5,6 +5,46 @@ if (!defined('WPINC')) {
 
 class EGA_Consent {
 
+    public static function get_palettes() {
+        return array(
+            'dark' => array(
+                'bg'           => '#1e1e1e',
+                'text'         => '#ffffff',
+                'accept'       => '#2271b1',
+                'reject'       => '#ffffff',
+                'reject_style' => 'outline',
+            ),
+            'light' => array(
+                'bg'           => '#ffffff',
+                'text'         => '#1e1e1e',
+                'accept'       => '#2271b1',
+                'reject'       => '#f0f0f1',
+                'reject_style' => 'filled',
+            ),
+            'minimal' => array(
+                'bg'           => '#f8f9fa',
+                'text'         => '#3c434a',
+                'accept'       => '#3c434a',
+                'reject'       => '#3c434a',
+                'reject_style' => 'outline',
+            ),
+            'brand-blue' => array(
+                'bg'           => '#0f172a',
+                'text'         => '#e2e8f0',
+                'accept'       => '#3b82f6',
+                'reject'       => '#93c5fd',
+                'reject_style' => 'outline',
+            ),
+            'high-contrast' => array(
+                'bg'           => '#000000',
+                'text'         => '#ffffff',
+                'accept'       => '#ffcc00',
+                'reject'       => '#ffffff',
+                'reject_style' => 'filled',
+            ),
+        );
+    }
+
     public static function init() {
         add_action('wp_enqueue_scripts', array(__CLASS__, 'enqueue'));
         add_action('wp_footer', array(__CLASS__, 'render_banner_markup'));

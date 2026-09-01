@@ -91,6 +91,114 @@ class EGA_Settings {
                 )
             );
         }
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_banner_palette',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => array(__CLASS__, 'sanitize_banner_palette'),
+                'default'           => 'dark',
+            )
+        );
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_banner_bg_color',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => function ($input) {
+                    return EGA_Settings::sanitize_hex_color($input, 'for_you_google_analytics_banner_bg_color', get_option('for_you_google_analytics_banner_bg_color', '#1e1e1e'));
+                },
+                'default'           => '#1e1e1e',
+            )
+        );
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_banner_text_color',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => function ($input) {
+                    return EGA_Settings::sanitize_hex_color($input, 'for_you_google_analytics_banner_text_color', get_option('for_you_google_analytics_banner_text_color', '#ffffff'));
+                },
+                'default'           => '#ffffff',
+            )
+        );
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_banner_accept_color',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => function ($input) {
+                    return EGA_Settings::sanitize_hex_color($input, 'for_you_google_analytics_banner_accept_color', get_option('for_you_google_analytics_banner_accept_color', '#2271b1'));
+                },
+                'default'           => '#2271b1',
+            )
+        );
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_banner_reject_color',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => function ($input) {
+                    return EGA_Settings::sanitize_hex_color($input, 'for_you_google_analytics_banner_reject_color', get_option('for_you_google_analytics_banner_reject_color', '#ffffff'));
+                },
+                'default'           => '#ffffff',
+            )
+        );
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_banner_layout',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => array(__CLASS__, 'sanitize_banner_layout'),
+                'default'           => 'bar',
+            )
+        );
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_banner_message',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_textarea_field',
+                'default'           => '',
+            )
+        );
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_banner_accept_label',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+                'default'           => '',
+            )
+        );
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_banner_reject_label',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => 'sanitize_text_field',
+                'default'           => '',
+            )
+        );
+
+        register_setting(
+            'for_you_google_analytics_options',
+            'for_you_google_analytics_banner_privacy_url',
+            array(
+                'type'              => 'string',
+                'sanitize_callback' => array(__CLASS__, 'sanitize_banner_privacy_url'),
+                'default'           => '',
+            )
+        );
     }
 
     public static function sanitize_ga4_code($input) {
@@ -133,6 +241,55 @@ class EGA_Settings {
 
     public static function sanitize_checkbox($input) {
         return ($input === '1') ? '1' : '';
+    }
+
+    public static function sanitize_hex_color($input, $option_name, $fallback) {
+        $input = is_string($input) ? trim($input) : '';
+
+        if (preg_match('/^#[0-9a-fA-F]{6}$/', $input)) {
+            return strtolower($input);
+        }
+
+        add_settings_error(
+            $option_name,
+            'invalid_hex_color',
+            __('Invalid color value. Colors must be a 6-digit hex code (e.g. #1e1e1e).', 'for-you-google-analytics')
+        );
+
+        return $fallback;
+    }
+
+    public static function sanitize_banner_palette($input) {
+        $input = is_string($input) ? trim($input) : '';
+        $palettes = EGA_Consent::get_palettes();
+
+        if (!array_key_exists($input, $palettes)) {
+            return 'custom';
+        }
+
+        $preset = $palettes[$input];
+        update_option('for_you_google_analytics_banner_bg_color', $preset['bg']);
+        update_option('for_you_google_analytics_banner_text_color', $preset['text']);
+        update_option('for_you_google_analytics_banner_accept_color', $preset['accept']);
+        update_option('for_you_google_analytics_banner_reject_color', $preset['reject']);
+
+        return $input;
+    }
+
+    public static function sanitize_banner_layout($input) {
+        return ($input === 'corner') ? 'corner' : 'bar';
+    }
+
+    public static function sanitize_banner_privacy_url($input) {
+        $input = is_string($input) ? trim($input) : '';
+
+        if ($input === '') {
+            return '';
+        }
+
+        $sanitized = esc_url_raw($input);
+
+        return $sanitized !== '' ? $sanitized : '';
     }
 
     public static function render_page() {
