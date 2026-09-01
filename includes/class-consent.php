@@ -80,14 +80,50 @@ class EGA_Consent {
         if (!self::banner_enabled()) {
             return;
         }
+
+        $palette_key = get_option('for_you_google_analytics_banner_palette', 'dark');
+        $palettes    = self::get_palettes();
+        $reject_style = isset($palettes[$palette_key]) ? $palettes[$palette_key]['reject_style'] : 'outline';
+
+        $bg_color     = get_option('for_you_google_analytics_banner_bg_color', '#1e1e1e');
+        $text_color   = get_option('for_you_google_analytics_banner_text_color', '#ffffff');
+        $accept_color = get_option('for_you_google_analytics_banner_accept_color', '#2271b1');
+        $reject_color = get_option('for_you_google_analytics_banner_reject_color', '#ffffff');
+        $layout       = get_option('for_you_google_analytics_banner_layout', 'bar');
+
+        $message      = get_option('for_you_google_analytics_banner_message', '');
+        $message      = $message !== '' ? $message : __('This site uses cookies to analyze traffic via Google Analytics. Do you accept analytics cookies?', 'for-you-google-analytics');
+        $accept_label = get_option('for_you_google_analytics_banner_accept_label', '');
+        $accept_label = $accept_label !== '' ? $accept_label : __('Accept', 'for-you-google-analytics');
+        $reject_label = get_option('for_you_google_analytics_banner_reject_label', '');
+        $reject_label = $reject_label !== '' ? $reject_label : __('Reject', 'for-you-google-analytics');
+
+        $privacy_url = get_option('for_you_google_analytics_banner_privacy_url', '');
+        if ($privacy_url === '') {
+            $privacy_url = get_privacy_policy_url();
+        }
+
+        $style = sprintf(
+            '--ega-banner-bg:%s;--ega-banner-text:%s;--ega-banner-accept:%s;--ega-banner-reject:%s;',
+            esc_attr($bg_color),
+            esc_attr($text_color),
+            esc_attr($accept_color),
+            esc_attr($reject_color)
+        );
         ?>
-        <div id="ega-consent-banner" hidden>
-            <p><?php esc_html_e('This site uses cookies to analyze traffic via Google Analytics. Do you accept analytics cookies?', 'for-you-google-analytics'); ?></p>
+        <div id="ega-consent-banner" class="ega-layout-<?php echo esc_attr($layout); ?>" data-reject-style="<?php echo esc_attr($reject_style); ?>" style="<?php echo esc_attr($style); ?>" hidden>
+            <p>
+                <?php echo esc_html($message); ?>
+                <?php if (!empty($privacy_url)) : ?>
+                    <a href="<?php echo esc_url($privacy_url); ?>"><?php esc_html_e('Learn more', 'for-you-google-analytics'); ?></a>
+                <?php endif; ?>
+            </p>
             <div class="ega-consent-actions">
-                <button type="button" id="ega-consent-reject"><?php esc_html_e('Reject', 'for-you-google-analytics'); ?></button>
-                <button type="button" id="ega-consent-accept"><?php esc_html_e('Accept', 'for-you-google-analytics'); ?></button>
+                <button type="button" id="ega-consent-reject"><?php echo esc_html($reject_label); ?></button>
+                <button type="button" id="ega-consent-accept"><?php echo esc_html($accept_label); ?></button>
             </div>
         </div>
+        <button type="button" id="ega-consent-manage" style="<?php echo esc_attr($style); ?>" hidden><?php esc_html_e('Manage cookie preferences', 'for-you-google-analytics'); ?></button>
         <?php
     }
 }

@@ -1,11 +1,8 @@
 #ega-consent-banner {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
     z-index: 999999;
-    background: #1e1e1e;
-    color: #fff;
+    background: var(--ega-banner-bg, #1e1e1e);
+    color: var(--ega-banner-text, #fff);
     padding: 16px 20px;
     display: flex;
     flex-wrap: wrap;
@@ -17,9 +14,34 @@
     box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.2);
 }
 
+#ega-consent-banner.ega-layout-bar {
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+#ega-consent-banner.ega-layout-corner {
+    bottom: 16px;
+    right: 16px;
+    max-width: 380px;
+    flex-direction: column;
+    align-items: flex-start;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
 #ega-consent-banner p {
     margin: 0;
     flex: 1 1 300px;
+}
+
+#ega-consent-banner.ega-layout-corner p {
+    flex: 1 1 auto;
+}
+
+#ega-consent-banner p a {
+    color: inherit;
+    text-decoration: underline;
 }
 
 #ega-consent-banner .ega-consent-actions {
@@ -37,16 +59,49 @@
 }
 
 #ega-consent-accept {
-    background: #2271b1;
+    background: var(--ega-banner-accept, #2271b1);
     color: #fff;
 }
 
-#ega-consent-reject {
+#ega-consent-banner[data-reject-style="filled"] #ega-consent-reject {
+    background: var(--ega-banner-reject, #f0f0f1);
+    color: var(--ega-banner-bg, #1e1e1e);
+    border: none;
+}
+
+#ega-consent-banner[data-reject-style="outline"] #ega-consent-reject,
+#ega-consent-banner:not([data-reject-style]) #ega-consent-reject {
     background: transparent;
-    color: #fff;
-    border: 1px solid #fff;
+    color: var(--ega-banner-reject, var(--ega-banner-text, #fff));
+    border: 1px solid var(--ega-banner-reject, var(--ega-banner-text, #fff));
 }
 
 #ega-consent-banner[hidden] {
+    display: none;
+}
+
+#ega-consent-manage {
+    position: fixed;
+    bottom: 16px;
+    left: 16px;
+    z-index: 999998;
+    background: var(--ega-banner-bg, #1e1e1e);
+    color: var(--ega-banner-text, #fff);
+    border: none;
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 12px;
+    line-height: 1.4;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    opacity: 0.85;
+}
+
+#ega-consent-manage:hover,
+#ega-consent-manage:focus {
+    opacity: 1;
+}
+
+#ega-consent-manage[hidden] {
     display: none;
 }
