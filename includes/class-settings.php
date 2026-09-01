@@ -40,6 +40,15 @@ class EGA_Settings {
             '2.0',
             true
         );
+
+        wp_localize_script('ega-admin-scripts', 'egaBannerDesign', array(
+            'palettes' => EGA_Consent::get_palettes(),
+            'defaults' => array(
+                'message'     => __('This site uses cookies to analyze traffic via Google Analytics. Do you accept analytics cookies?', 'for-you-google-analytics'),
+                'acceptLabel' => __('Accept', 'for-you-google-analytics'),
+                'rejectLabel' => __('Reject', 'for-you-google-analytics'),
+            ),
+        ));
     }
 
     public static function register_settings() {
@@ -358,6 +367,17 @@ class EGA_Settings {
             <form method="post" action="options.php" class="ega-settings-form">
                 <?php settings_fields('for_you_google_analytics_options'); ?>
 
+                <!-- Tabs -->
+                <div class="ega-tabs-nav" role="tablist">
+                    <button type="button" id="ega-tab-trigger-settings" class="ega-tab-trigger is-active" role="tab" aria-selected="true" aria-controls="ega-tab-panel-settings">
+                        <?php esc_html_e('Settings', 'for-you-google-analytics'); ?>
+                    </button>
+                    <button type="button" id="ega-tab-trigger-design" class="ega-tab-trigger" role="tab" aria-selected="false" aria-controls="ega-tab-panel-design">
+                        <?php esc_html_e('Banner Design', 'for-you-google-analytics'); ?>
+                    </button>
+                </div>
+
+                <div id="ega-tab-panel-settings" class="ega-tab-panel" role="tabpanel">
                 <div class="ega-grid">
                     <!-- Main Settings Column -->
                     <div class="ega-main-column">
@@ -719,7 +739,167 @@ class EGA_Settings {
 
                     </div>
                 </div>
+                </div>
+
+                <div id="ega-tab-panel-design" class="ega-tab-panel" hidden role="tabpanel">
+                    <?php self::render_design_tab(); ?>
+                </div>
             </form>
+        </div>
+        <?php
+    }
+
+    private static function render_design_tab() {
+        $palette       = get_option('for_you_google_analytics_banner_palette', 'dark');
+        $bg_color      = get_option('for_you_google_analytics_banner_bg_color', '#1e1e1e');
+        $text_color    = get_option('for_you_google_analytics_banner_text_color', '#ffffff');
+        $accept_color  = get_option('for_you_google_analytics_banner_accept_color', '#2271b1');
+        $reject_color  = get_option('for_you_google_analytics_banner_reject_color', '#ffffff');
+        $layout        = get_option('for_you_google_analytics_banner_layout', 'bar');
+        $message       = get_option('for_you_google_analytics_banner_message', '');
+        $accept_label  = get_option('for_you_google_analytics_banner_accept_label', '');
+        $reject_label  = get_option('for_you_google_analytics_banner_reject_label', '');
+        $privacy_url   = get_option('for_you_google_analytics_banner_privacy_url', '');
+
+        $default_message      = __('This site uses cookies to analyze traffic via Google Analytics. Do you accept analytics cookies?', 'for-you-google-analytics');
+        $default_accept_label = __('Accept', 'for-you-google-analytics');
+        $default_reject_label = __('Reject', 'for-you-google-analytics');
+        $palettes              = EGA_Consent::get_palettes();
+        ?>
+        <div class="ega-grid">
+            <div class="ega-main-column">
+
+                <!-- Card: Color Palette -->
+                <div class="ega-card">
+                    <div class="ega-card-header">
+                        <div class="ega-card-title-group">
+                            <div class="ega-card-icon accent">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C22 6.012 17.461 2 12 2z"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="ega-card-title"><?php esc_html_e('Color Palette', 'for-you-google-analytics'); ?></h2>
+                                <p class="ega-card-subtitle"><?php esc_html_e('Pick a preset, then fine-tune any color individually.', 'for-you-google-analytics'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ega-card-body">
+                        <input type="hidden" id="ega-banner-palette-input" name="for_you_google_analytics_banner_palette" value="<?php echo esc_attr($palette); ?>" />
+
+                        <div class="ega-palette-swatches">
+                            <?php foreach ($palettes as $key => $preset) : ?>
+                                <button type="button" class="ega-palette-swatch <?php echo ($palette === $key) ? 'is-active' : ''; ?>" data-palette="<?php echo esc_attr($key); ?>">
+                                    <span class="ega-palette-swatch-preview" style="background:<?php echo esc_attr($preset['bg']); ?>;">
+                                        <span style="background:<?php echo esc_attr($preset['accept']); ?>;"></span>
+                                        <span style="background:<?php echo esc_attr($preset['reject']); ?>;"></span>
+                                    </span>
+                                    <span class="ega-palette-swatch-label"><?php echo esc_html(ucwords(str_replace('-', ' ', $key))); ?></span>
+                                </button>
+                            <?php endforeach; ?>
+                        </div>
+
+                        <div class="ega-field-group">
+                            <label class="ega-field-label" for="ega-banner-bg-color"><span><?php esc_html_e('Background Color', 'for-you-google-analytics'); ?></span></label>
+                            <input type="text" id="ega-banner-bg-color" name="for_you_google_analytics_banner_bg_color" value="<?php echo esc_attr($bg_color); ?>" class="ega-color-input" />
+                        </div>
+                        <div class="ega-field-group">
+                            <label class="ega-field-label" for="ega-banner-text-color"><span><?php esc_html_e('Text Color', 'for-you-google-analytics'); ?></span></label>
+                            <input type="text" id="ega-banner-text-color" name="for_you_google_analytics_banner_text_color" value="<?php echo esc_attr($text_color); ?>" class="ega-color-input" />
+                        </div>
+                        <div class="ega-field-group">
+                            <label class="ega-field-label" for="ega-banner-accept-color"><span><?php esc_html_e('Accept Button Color', 'for-you-google-analytics'); ?></span></label>
+                            <input type="text" id="ega-banner-accept-color" name="for_you_google_analytics_banner_accept_color" value="<?php echo esc_attr($accept_color); ?>" class="ega-color-input" />
+                        </div>
+                        <div class="ega-field-group">
+                            <label class="ega-field-label" for="ega-banner-reject-color"><span><?php esc_html_e('Reject Button Color', 'for-you-google-analytics'); ?></span></label>
+                            <input type="text" id="ega-banner-reject-color" name="for_you_google_analytics_banner_reject_color" value="<?php echo esc_attr($reject_color); ?>" class="ega-color-input" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Layout -->
+                <div class="ega-card">
+                    <div class="ega-card-header">
+                        <div class="ega-card-title-group">
+                            <div class="ega-card-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="ega-card-title"><?php esc_html_e('Layout', 'for-you-google-analytics'); ?></h2>
+                                <p class="ega-card-subtitle"><?php esc_html_e('Choose how the banner is positioned on the page.', 'for-you-google-analytics'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ega-card-body">
+                        <label class="ega-radio-option">
+                            <input type="radio" name="for_you_google_analytics_banner_layout" value="bar" <?php checked('bar', $layout); ?> />
+                            <?php esc_html_e('Full-width bar (bottom of screen)', 'for-you-google-analytics'); ?>
+                        </label>
+                        <label class="ega-radio-option">
+                            <input type="radio" name="for_you_google_analytics_banner_layout" value="corner" <?php checked('corner', $layout); ?> />
+                            <?php esc_html_e('Floating box (bottom-right corner)', 'for-you-google-analytics'); ?>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Card: Wording & Privacy Link -->
+                <div class="ega-card">
+                    <div class="ega-card-header">
+                        <div class="ega-card-title-group">
+                            <div class="ega-card-icon emerald">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                            </div>
+                            <div>
+                                <h2 class="ega-card-title"><?php esc_html_e('Wording &amp; Privacy Link', 'for-you-google-analytics'); ?></h2>
+                                <p class="ega-card-subtitle"><?php esc_html_e('Leave a field blank to use the default text.', 'for-you-google-analytics'); ?></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ega-card-body">
+                        <div class="ega-field-group">
+                            <label class="ega-field-label" for="ega-banner-message"><span><?php esc_html_e('Banner Message', 'for-you-google-analytics'); ?></span></label>
+                            <textarea id="ega-banner-message" name="for_you_google_analytics_banner_message" class="ega-text-input ega-textarea" rows="3" placeholder="<?php echo esc_attr($default_message); ?>"><?php echo esc_textarea($message); ?></textarea>
+                        </div>
+                        <div class="ega-field-group">
+                            <label class="ega-field-label" for="ega-banner-accept-label"><span><?php esc_html_e('Accept Button Label', 'for-you-google-analytics'); ?></span></label>
+                            <input type="text" id="ega-banner-accept-label" name="for_you_google_analytics_banner_accept_label" value="<?php echo esc_attr($accept_label); ?>" class="ega-text-input" placeholder="<?php echo esc_attr($default_accept_label); ?>" />
+                        </div>
+                        <div class="ega-field-group">
+                            <label class="ega-field-label" for="ega-banner-reject-label"><span><?php esc_html_e('Reject Button Label', 'for-you-google-analytics'); ?></span></label>
+                            <input type="text" id="ega-banner-reject-label" name="for_you_google_analytics_banner_reject_label" value="<?php echo esc_attr($reject_label); ?>" class="ega-text-input" placeholder="<?php echo esc_attr($default_reject_label); ?>" />
+                        </div>
+                        <div class="ega-field-group">
+                            <label class="ega-field-label" for="ega-banner-privacy-url"><span><?php esc_html_e('Privacy Policy URL', 'for-you-google-analytics'); ?></span></label>
+                            <input type="url" id="ega-banner-privacy-url" name="for_you_google_analytics_banner_privacy_url" value="<?php echo esc_attr($privacy_url); ?>" class="ega-text-input" placeholder="<?php echo esc_attr(get_privacy_policy_url()); ?>" />
+                            <p class="ega-helper-text">
+                                <?php esc_html_e('Leave blank to automatically use your site\'s Privacy Policy page (Settings > Privacy), if one is set.', 'for-you-google-analytics'); ?>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ega-sidebar-column">
+                <div class="ega-sidebar-card">
+                    <div class="ega-sidebar-header">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <h3 class="ega-sidebar-title"><?php esc_html_e('Live Preview', 'for-you-google-analytics'); ?></h3>
+                    </div>
+                    <div class="ega-sidebar-body">
+                        <div id="ega-design-preview" class="ega-preview-box ega-design-preview">
+                            <div class="ega-preview-header">
+                                <span><?php esc_html_e('Frontend Preview', 'for-you-google-analytics'); ?></span>
+                            </div>
+                            <div id="ega-design-preview-banner" class="ega-preview-banner ega-layout-<?php echo esc_attr($layout); ?>" data-reject-style="<?php echo esc_attr($palettes[$palette]['reject_style'] ?? 'outline'); ?>">
+                                <p id="ega-design-preview-message"><?php echo esc_html($message !== '' ? $message : $default_message); ?></p>
+                                <div class="ega-preview-actions">
+                                    <button type="button" id="ega-design-preview-reject" class="ega-btn-preview-reject"><?php echo esc_html($reject_label !== '' ? $reject_label : $default_reject_label); ?></button>
+                                    <button type="button" id="ega-design-preview-accept" class="ega-btn-preview-accept"><?php echo esc_html($accept_label !== '' ? $accept_label : $default_accept_label); ?></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <?php
     }
