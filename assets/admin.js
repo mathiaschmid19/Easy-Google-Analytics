@@ -133,6 +133,16 @@
       $bgColor.add($textColor).add($acceptColor).add($rejectColor).add($message).add($acceptLabel).add($rejectLabel).on('input', syncPreview);
       $layoutRadios.on('change', syncPreview);
 
+      // Manually editing a color field after a preset was selected means the
+      // colors no longer match that preset — switch the hidden palette input
+      // to 'custom' so save doesn't silently re-apply the last-clicked preset
+      // and discard the manual edit, and clear the swatch active state so the
+      // UI doesn't keep showing a preset as selected.
+      $bgColor.add($textColor).add($acceptColor).add($rejectColor).on('input', function () {
+        $paletteInput.val('custom');
+        $('.ega-palette-swatch').removeClass('is-active');
+      });
+
       // #ega-banner-message is a <textarea>, not an <input>, so the generic
       // `form.ega-settings-form input` dirty-tracking selector never matches it.
       // Bind markFormDirty explicitly so editing this field marks the form dirty too.

@@ -322,6 +322,10 @@ class EGA_Settings {
             <?php
             settings_errors('for_you_google_analytics_ga4_code');
             settings_errors('for_you_google_analytics_gtm_id');
+            settings_errors('for_you_google_analytics_banner_bg_color');
+            settings_errors('for_you_google_analytics_banner_text_color');
+            settings_errors('for_you_google_analytics_banner_accept_color');
+            settings_errors('for_you_google_analytics_banner_reject_color');
             ?>
 
             <!-- Hero Header Banner -->

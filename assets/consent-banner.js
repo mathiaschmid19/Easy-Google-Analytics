@@ -57,16 +57,44 @@
     }
 
     function initFallbackBanner() {
+        var banner = document.getElementById('ega-consent-banner');
+        var manageBtn = document.getElementById('ega-consent-manage');
+
+        function showManageButton() {
+            if (banner) {
+                banner.setAttribute('hidden', 'hidden');
+            }
+            if (manageBtn) {
+                manageBtn.removeAttribute('hidden');
+            }
+        }
+
+        function showBanner() {
+            if (manageBtn) {
+                manageBtn.setAttribute('hidden', 'hidden');
+            }
+            if (banner) {
+                banner.removeAttribute('hidden');
+            }
+        }
+
+        if (manageBtn) {
+            manageBtn.addEventListener('click', function () {
+                showBanner();
+            });
+        }
+
         var existing = getCookie(COOKIE_NAME);
         if (existing === 'granted') {
             updateConsent(true);
+            showManageButton();
             return;
         }
         if (existing === 'denied') {
+            showManageButton();
             return;
         }
 
-        var banner = document.getElementById('ega-consent-banner');
         if (!banner) {
             return;
         }
@@ -79,13 +107,13 @@
         acceptBtn.addEventListener('click', function () {
             setCookie(COOKIE_NAME, 'granted');
             updateConsent(true);
-            banner.setAttribute('hidden', 'hidden');
+            showManageButton();
         });
 
         rejectBtn.addEventListener('click', function () {
             setCookie(COOKIE_NAME, 'denied');
             updateConsent(false);
-            banner.setAttribute('hidden', 'hidden');
+            showManageButton();
         });
     }
 
