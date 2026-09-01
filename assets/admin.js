@@ -64,6 +64,99 @@
     if ($ga4Input.val()) validateGA4();
     if ($gtmInput.val()) validateGTM();
 
+    // Tab switching
+    const $tabTriggerSettings = $('#ega-tab-trigger-settings');
+    const $tabTriggerDesign = $('#ega-tab-trigger-design');
+    const $tabPanelSettings = $('#ega-tab-panel-settings');
+    const $tabPanelDesign = $('#ega-tab-panel-design');
+
+    function activateTab(name) {
+      const isSettings = name === 'settings';
+      $tabTriggerSettings.toggleClass('is-active', isSettings).attr('aria-selected', isSettings ? 'true' : 'false');
+      $tabTriggerDesign.toggleClass('is-active', !isSettings).attr('aria-selected', !isSettings ? 'true' : 'false');
+      $tabPanelSettings.prop('hidden', !isSettings);
+      $tabPanelDesign.prop('hidden', isSettings);
+    }
+
+    $tabTriggerSettings.on('click', function () {
+      activateTab('settings');
+    });
+    $tabTriggerDesign.on('click', function () {
+      activateTab('design');
+    });
+
+    // Banner Design live preview
+    if (typeof egaBannerDesign !== 'undefined') {
+      const $bgColor = $('#ega-banner-bg-color');
+      const $textColor = $('#ega-banner-text-color');
+      const $acceptColor = $('#ega-banner-accept-color');
+      const $rejectColor = $('#ega-banner-reject-color');
+      const $paletteInput = $('#ega-banner-palette-input');
+      const $layoutRadios = $('input[name="for_you_google_analytics_banner_layout"]');
+      const $message = $('#ega-banner-message');
+      const $acceptLabel = $('#ega-banner-accept-label');
+      const $rejectLabel = $('#ega-banner-reject-label');
+      const $previewBanner = $('#ega-design-preview-banner');
+      const $previewMessage = $('#ega-design-preview-message');
+      const $previewReject = $('#ega-design-preview-reject');
+      const $previewAccept = $('#ega-design-preview-accept');
+
+      function currentRejectStyle() {
+        const paletteKey = $paletteInput.val();
+        const preset = egaBannerDesign.palettes[paletteKey];
+        return preset ? preset.reject_style : 'outline';
+      }
+
+      function syncPreview() {
+        $previewBanner.css({
+          background: $bgColor.val(),
+          color: $textColor.val()
+        });
+        $previewAccept.css({ background: $acceptColor.val(), color: '#ffffff' });
+
+        const rejectStyle = currentRejectStyle();
+        $previewBanner.attr('data-reject-style', rejectStyle);
+        if (rejectStyle === 'filled') {
+          $previewReject.css({ background: $rejectColor.val(), color: $textColor.val(), border: 'none' });
+        } else {
+          $previewReject.css({ background: 'transparent', color: $rejectColor.val(), border: '1px solid ' + $rejectColor.val() });
+        }
+
+        $previewBanner.removeClass('ega-layout-bar ega-layout-corner');
+        $previewBanner.addClass('ega-layout-' + $layoutRadios.filter(':checked').val());
+
+        $previewMessage.text($message.val().trim() !== '' ? $message.val() : egaBannerDesign.defaults.message);
+        $previewAccept.text($acceptLabel.val().trim() !== '' ? $acceptLabel.val() : egaBannerDesign.defaults.acceptLabel);
+        $previewReject.text($rejectLabel.val().trim() !== '' ? $rejectLabel.val() : egaBannerDesign.defaults.rejectLabel);
+      }
+
+      $bgColor.add($textColor).add($acceptColor).add($rejectColor).add($message).add($acceptLabel).add($rejectLabel).on('input', syncPreview);
+      $layoutRadios.on('change', syncPreview);
+
+      // Palette swatch selection
+      $('.ega-palette-swatch').on('click', function () {
+        const key = $(this).data('palette');
+        const preset = egaBannerDesign.palettes[key];
+        if (!preset) {
+          return;
+        }
+
+        $('.ega-palette-swatch').removeClass('is-active');
+        $(this).addClass('is-active');
+        $paletteInput.val(key);
+
+        $bgColor.val(preset.bg);
+        $textColor.val(preset.text);
+        $acceptColor.val(preset.accept);
+        $rejectColor.val(preset.reject);
+
+        syncPreview();
+        markFormDirty();
+      });
+
+      syncPreview();
+    }
+
     // Event tracking cards click handler
     $('.ega-event-item').on('click', function (e) {
       if ($(e.target).is('input[type="checkbox"]')) {
