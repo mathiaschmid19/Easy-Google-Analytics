@@ -30,14 +30,14 @@ class EGA_Settings {
             'ega-admin-styles',
             EGA_PLUGIN_URL . 'assets/admin.css',
             array(),
-            '2.0'
+            '2.1'
         );
 
         wp_enqueue_script(
             'ega-admin-scripts',
             EGA_PLUGIN_URL . 'assets/admin.js',
             array('jquery'),
-            '2.0',
+            '2.1',
             true
         );
     }
@@ -153,11 +153,6 @@ class EGA_Settings {
         if ($track_forms === '1')    $active_events_count++;
         ?>
         <div class="wrap ega-admin-wrap">
-            <?php
-            settings_errors('for_you_google_analytics_ga4_code');
-            settings_errors('for_you_google_analytics_gtm_id');
-            ?>
-
             <!-- Hero Header Banner -->
             <div class="ega-header-banner">
                 <div class="ega-header-content">
@@ -197,6 +192,25 @@ class EGA_Settings {
                 </div>
             </div>
 
+            <!-- Admin Notifications Container -->
+            <div class="ega-notices-container">
+                <?php
+                settings_errors('for_you_google_analytics_ga4_code');
+                settings_errors('for_you_google_analytics_gtm_id');
+
+                if (!empty($ga4_code) && !empty($gtm_id)) :
+                    ?>
+                    <div class="notice notice-warning">
+                        <p>
+                            <strong><?php esc_html_e('Both GA4 and GTM are configured: ', 'for-you-google-analytics'); ?></strong>
+                            <?php esc_html_e('This plugin will load both the standalone GA4 tag and the GTM container on every page, which commonly causes duplicate pageview hits if your GTM container already includes a GA4 configuration tag. If GTM manages GA4, clear the GA4 Measurement ID field above and configure GA4 inside GTM instead.', 'for-you-google-analytics'); ?>
+                        </p>
+                    </div>
+                    <?php
+                endif;
+                ?>
+            </div>
+
             <!-- Main Form -->
             <form method="post" action="options.php" class="ega-settings-form">
                 <?php settings_fields('for_you_google_analytics_options'); ?>
@@ -230,6 +244,12 @@ class EGA_Settings {
                                         <span class="ega-label-tag recommended"><?php esc_html_e('Recommended', 'for-you-google-analytics'); ?></span>
                                     </label>
                                     <div class="ega-input-wrapper">
+                                        <span class="ega-input-prefix-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                                                <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+                                            </svg>
+                                        </span>
                                         <input
                                             type="text"
                                             id="for_you_google_analytics_ga4_code"
@@ -240,12 +260,6 @@ class EGA_Settings {
                                             autocomplete="off"
                                             spellcheck="false"
                                         />
-                                        <div class="ega-input-prefix-icon">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
-                                                <path d="M22 12A10 10 0 0 0 12 2v10z"/>
-                                            </svg>
-                                        </div>
                                     </div>
                                     <div id="ega-ga4-validation-msg" class="ega-input-validation-msg"></div>
                                     <p class="ega-helper-text">
@@ -260,6 +274,12 @@ class EGA_Settings {
                                         <span class="ega-label-tag"><?php esc_html_e('Optional', 'for-you-google-analytics'); ?></span>
                                     </label>
                                     <div class="ega-input-wrapper">
+                                        <span class="ega-input-prefix-icon">
+                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+                                                <line x1="7" y1="7" x2="7.01" y2="7"/>
+                                            </svg>
+                                        </span>
                                         <input
                                             type="text"
                                             id="for_you_google_analytics_gtm_id"
@@ -270,12 +290,6 @@ class EGA_Settings {
                                             autocomplete="off"
                                             spellcheck="false"
                                         />
-                                        <div class="ega-input-prefix-icon">
-                                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
-                                                <line x1="7" y1="7" x2="7.01" y2="7"/>
-                                            </svg>
-                                        </div>
                                     </div>
                                     <div id="ega-gtm-validation-msg" class="ega-input-validation-msg"></div>
                                     <p class="ega-helper-text">

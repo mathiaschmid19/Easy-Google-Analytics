@@ -41,12 +41,38 @@
   box-sizing: border-box;
 }
 
-/* WordPress Notice Overrides within wrap */
+/* WordPress Notice Overrides */
+.ega-notices-container {
+  margin-bottom: 20px;
+}
+
+.ega-notices-container:empty {
+  margin-bottom: 0;
+}
+
 .ega-admin-wrap .notice {
-  margin: 0 0 20px 0;
-  border-radius: var(--ega-radius-sm);
+  margin: 20px 0;
+  border-radius: var(--ega-radius-md);
   border-left-width: 4px;
   box-shadow: var(--ega-shadow-sm);
+  background: #ffffff;
+}
+
+.ega-admin-wrap .updated,
+.ega-admin-wrap .error,
+.ega-admin-wrap .settings-error {
+  margin: 0 0 16px 0;
+  border-radius: var(--ega-radius-md);
+  border-left-width: 4px;
+  box-shadow: var(--ega-shadow-sm);
+  background: #ffffff;
+}
+
+.ega-notices-container .notice:last-child,
+.ega-notices-container .updated:last-child,
+.ega-notices-container .error:last-child,
+.ega-notices-container .settings-error:last-child {
+  margin-bottom: 0;
 }
 
 /* Header Banner */
@@ -58,7 +84,7 @@
   position: relative;
   overflow: hidden;
   box-shadow: var(--ega-shadow-lg);
-  margin-bottom: 28px;
+  margin-bottom: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -346,57 +372,81 @@
   color: #059669;
 }
 
-.ega-input-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
+/* Input Wrapper & Prefix Icon (Rock-solid positioning & padding) */
+.ega-admin-wrap .ega-input-wrapper {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
 }
 
-.ega-input-prefix-icon {
-  position: absolute;
-  left: 14px;
-  color: var(--ega-text-muted);
-  display: flex;
-  align-items: center;
-  pointer-events: none;
-  transition: var(--ega-transition);
+.ega-admin-wrap .ega-input-prefix-icon {
+  position: absolute !important;
+  left: 15px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--ega-text-muted) !important;
+  pointer-events: none !important;
+  z-index: 10 !important;
+  transition: var(--ega-transition) !important;
 }
 
-.ega-text-input {
-  width: 100%;
-  height: 46px;
-  padding: 0 16px 0 44px;
-  font-size: 14px;
-  font-family: monospace, -apple-system, BlinkMacSystemFont, sans-serif;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-  color: var(--ega-text-main);
-  background: #f8fafc;
-  border: 1.5px solid var(--ega-border);
-  border-radius: var(--ega-radius-md);
-  transition: var(--ega-transition);
-  outline: none;
+.ega-admin-wrap .ega-input-prefix-icon svg {
+  width: 18px !important;
+  height: 18px !important;
+  display: block !important;
 }
 
-.ega-text-input:focus {
-  background: #ffffff;
-  border-color: var(--ega-border-focus);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+.ega-admin-wrap input[type="text"].ega-text-input,
+.ega-admin-wrap input.ega-text-input,
+.ega-admin-wrap .ega-text-input {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  line-height: 48px !important;
+  padding: 0 16px 0 48px !important; /* 48px left padding completely clears the icon */
+  font-size: 14px !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+  letter-spacing: 0.5px !important;
+  font-weight: 600 !important;
+  color: var(--ega-text-main) !important;
+  background-color: #f8fafc !important;
+  border: 1.5px solid var(--ega-border) !important;
+  border-radius: var(--ega-radius-md) !important;
+  transition: var(--ega-transition) !important;
+  outline: none !important;
+  box-sizing: border-box !important;
+  box-shadow: none !important;
 }
 
-.ega-text-input:focus + .ega-input-prefix-icon,
-.ega-input-wrapper:focus-within .ega-input-prefix-icon {
-  color: var(--ega-primary);
+.ega-admin-wrap input[type="text"].ega-text-input:focus,
+.ega-admin-wrap input.ega-text-input:focus,
+.ega-admin-wrap .ega-text-input:focus {
+  background-color: #ffffff !important;
+  border-color: var(--ega-border-focus) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
 }
 
-.ega-text-input.is-valid {
-  border-color: var(--ega-success);
-  background: #ffffff;
+.ega-admin-wrap .ega-input-wrapper:focus-within .ega-input-prefix-icon {
+  color: var(--ega-primary) !important;
 }
 
-.ega-text-input.is-invalid {
-  border-color: #ef4444;
-  background: #fff;
+.ega-admin-wrap input[type="text"].ega-text-input.is-valid,
+.ega-admin-wrap .ega-text-input.is-valid {
+  border-color: var(--ega-success) !important;
+  background-color: #ffffff !important;
+}
+
+.ega-admin-wrap input[type="text"].ega-text-input.is-invalid,
+.ega-admin-wrap .ega-text-input.is-invalid {
+  border-color: #ef4444 !important;
+  background-color: #ffffff !important;
 }
 
 .ega-input-validation-msg {
@@ -408,12 +458,12 @@
   color: var(--ega-text-secondary);
 }
 
-.ega-input-validation-msg.error {
+.ega-input-validation-msg span.error {
   color: #ef4444;
   font-weight: 500;
 }
 
-.ega-input-validation-msg.valid {
+.ega-input-validation-msg span.valid {
   color: var(--ega-success);
   font-weight: 500;
 }

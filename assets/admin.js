@@ -4,7 +4,26 @@
 (function ($) {
   'use strict';
 
+  // Relocate WordPress notices below the header banner (.ega-notices-container)
+  function relocateNotices() {
+    const $container = $('.ega-notices-container');
+    if (!$container.length) return;
+
+    const $notices = $('.ega-admin-wrap .notice, .ega-admin-wrap .updated, .ega-admin-wrap .error, .ega-admin-wrap .settings-error');
+    $notices.each(function () {
+      if (!$(this).parent().is('.ega-notices-container')) {
+        $(this).appendTo($container);
+      }
+    });
+  }
+
+  relocateNotices();
+
   $(document).ready(function () {
+    relocateNotices();
+    setTimeout(relocateNotices, 50);
+    setTimeout(relocateNotices, 200);
+
     const $ga4Input = $('input[name="for_you_google_analytics_ga4_code"]');
     const $gtmInput = $('input[name="for_you_google_analytics_gtm_id"]');
     const $consentToggle = $('input[name="for_you_google_analytics_consent_banner_enabled"]');
