@@ -133,6 +133,11 @@
       $bgColor.add($textColor).add($acceptColor).add($rejectColor).add($message).add($acceptLabel).add($rejectLabel).on('input', syncPreview);
       $layoutRadios.on('change', syncPreview);
 
+      // #ega-banner-message is a <textarea>, not an <input>, so the generic
+      // `form.ega-settings-form input` dirty-tracking selector never matches it.
+      // Bind markFormDirty explicitly so editing this field marks the form dirty too.
+      $message.on('input', markFormDirty);
+
       // Palette swatch selection
       $('.ega-palette-swatch').on('click', function () {
         const key = $(this).data('palette');
