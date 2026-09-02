@@ -33,10 +33,12 @@
 #ega-consent-banner p {
     margin: 0;
     flex: 1 1 300px;
+    color: inherit;
 }
 
 #ega-consent-banner.ega-layout-corner p {
     flex: 1 1 auto;
+    color: inherit;
 }
 
 #ega-consent-banner p a {
@@ -48,6 +50,8 @@
     display: flex;
     gap: 8px;
     flex: 0 0 auto;
+    position: relative;
+    z-index: 2;
 }
 
 #ega-consent-banner button {
@@ -56,16 +60,29 @@
     border-radius: 4px;
     padding: 8px 16px;
     font-size: 14px;
+    font-weight: 600;
+    pointer-events: auto;
+    user-select: none;
+    transition: filter 0.2s ease, transform 0.1s ease;
+    box-sizing: border-box;
+}
+
+#ega-consent-banner button:hover {
+    filter: brightness(1.08);
+}
+
+#ega-consent-banner button:active {
+    transform: scale(0.97);
 }
 
 #ega-consent-accept {
     background: var(--ega-banner-accept, #2271b1);
-    color: #fff;
+    color: var(--ega-banner-accept-text, #fff);
 }
 
 #ega-consent-banner[data-reject-style="filled"] #ega-consent-reject {
     background: var(--ega-banner-reject, #f0f0f1);
-    color: var(--ega-banner-bg, #1e1e1e);
+    color: var(--ega-banner-reject-text, #1e1e1e);
     border: none;
 }
 
@@ -80,28 +97,85 @@
     display: none;
 }
 
+/* Floating Cookie Preferences Reopen Widget */
 #ega-consent-manage {
     position: fixed;
-    bottom: 16px;
-    left: 16px;
+    bottom: 20px;
+    left: 20px;
     z-index: 999998;
     background: var(--ega-banner-bg, #1e1e1e);
-    color: var(--ega-banner-text, #fff);
-    border: none;
-    border-radius: 999px;
-    padding: 8px 14px;
-    font-size: 12px;
-    line-height: 1.4;
+    color: var(--ega-banner-text, #ffffff);
+    border: 1px solid rgba(150, 150, 150, 0.25);
+    border-radius: 9999px;
+    height: 40px;
+    min-width: 40px;
+    padding: 0 14px 0 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    opacity: 0.85;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0.92;
+    overflow: hidden;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    outline: none;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#ega-consent-manage .ega-manage-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+}
+
+#ega-consent-manage .ega-manage-label {
+    display: inline-block;
+    transition: opacity 0.2s ease;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
 }
 
 #ega-consent-manage:hover,
-#ega-consent-manage:focus {
+#ega-consent-manage:focus-visible {
     opacity: 1;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.24), 0 2px 8px rgba(0, 0, 0, 0.12);
+    border-color: rgba(150, 150, 150, 0.45);
+}
+
+#ega-consent-manage:active {
+    transform: translateY(0) scale(0.96);
+}
+
+/* Mobile & Small Screens: Compact circle floating cookie button */
+@media (max-width: 768px) {
+    #ega-consent-manage {
+        bottom: 16px;
+        left: 16px;
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        padding: 0;
+        border-radius: 50%;
+    }
+
+    #ega-consent-manage .ega-manage-label {
+        display: none;
+    }
+
+    #ega-consent-manage .ega-manage-icon {
+        margin: 0;
+    }
 }
 
 #ega-consent-manage[hidden] {
-    display: none;
+    display: none !important;
 }

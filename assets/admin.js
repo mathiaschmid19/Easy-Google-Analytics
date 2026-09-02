@@ -83,25 +83,67 @@
     if ($ga4Input.val()) validateGA4();
     if ($gtmInput.val()) validateGTM();
 
-    // Tab switching
+    // Tab switching & live preview controller
     const $tabTriggerSettings = $('#ega-tab-trigger-settings');
     const $tabTriggerDesign = $('#ega-tab-trigger-design');
     const $tabPanelSettings = $('#ega-tab-panel-settings');
     const $tabPanelDesign = $('#ega-tab-panel-design');
+    const $allTabTriggers = $('.ega-tab-trigger');
+    let syncPreview = function () {};
 
-    function activateTab(name) {
+    function activateTab(name, updateHash) {
       const isSettings = name === 'settings';
-      $tabTriggerSettings.toggleClass('is-active', isSettings).attr('aria-selected', isSettings ? 'true' : 'false');
-      $tabTriggerDesign.toggleClass('is-active', !isSettings).attr('aria-selected', !isSettings ? 'true' : 'false');
+
+      $tabTriggerSettings
+        .toggleClass('is-active', isSettings)
+        .attr('aria-selected', isSettings ? 'true' : 'false')
+        .attr('tabindex', isSettings ? '0' : '-1');
+
+      $tabTriggerDesign
+        .toggleClass('is-active', !isSettings)
+        .attr('aria-selected', !isSettings ? 'true' : 'false')
+        .attr('tabindex', !isSettings ? '0' : '-1');
+
       $tabPanelSettings.prop('hidden', !isSettings);
       $tabPanelDesign.prop('hidden', isSettings);
+
+      if (updateHash !== false) {
+        const hash = isSettings ? '#settings' : '#banner-design';
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', hash);
+        } else {
+          window.location.hash = hash;
+        }
+      }
+
+      if (!isSettings) {
+        syncPreview();
+      }
     }
 
-    $tabTriggerSettings.on('click', function () {
+    $tabTriggerSettings.on('click', function (e) {
+      e.preventDefault();
       activateTab('settings');
     });
-    $tabTriggerDesign.on('click', function () {
+
+    $tabTriggerDesign.on('click', function (e) {
+      e.preventDefault();
       activateTab('design');
+    });
+
+    // Keyboard navigation (WAI-ARIA tabs pattern)
+    $allTabTriggers.on('keydown', function (e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const isCurrentlySettings = $tabTriggerSettings.hasClass('is-active');
+        if (isCurrentlySettings) {
+          $tabTriggerDesign.focus();
+          activateTab('design');
+        } else {
+          $tabTriggerSettings.focus();
+          activateTab('settings');
+        }
+      }
     });
 
     // Banner Design live preview
@@ -120,25 +162,61 @@
       const $previewReject = $('#ega-design-preview-reject');
       const $previewAccept = $('#ega-design-preview-accept');
 
+      function getContrastColor(hexColor) {
+        if (!hexColor || typeof hexColor !== 'string' || hexColor.charAt(0) !== '#') return '#ffffff';
+        let hex = hexColor.substring(1);
+        if (hex.length === 3) {
+          hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+        }
+        if (hex.length !== 6) return '#ffffff';
+        const r = parseInt(hex.substring(0, 2), 16) || 0;
+        const g = parseInt(hex.substring(2, 4), 16) || 0;
+        const b = parseInt(hex.substring(4, 6), 16) || 0;
+        const yiq = (r * 299 + g * 587 + b * 114) / 1000;
+        return yiq >= 128 ? '#000000' : '#ffffff';
+      }
+
       function currentRejectStyle() {
         const paletteKey = $paletteInput.val();
         const preset = egaBannerDesign.palettes[paletteKey];
         return preset ? preset.reject_style : 'outline';
       }
 
-      function syncPreview() {
+      syncPreview = function () {
+        const bgVal = $bgColor.val();
+        const textVal = $textColor.val();
+        const acceptVal = $acceptColor.val();
+        const rejectVal = $rejectColor.val();
+
         $previewBanner.css({
-          background: $bgColor.val(),
-          color: $textColor.val()
+          background: bgVal,
+          color: textVal
         });
-        $previewAccept.css({ background: $acceptColor.val(), color: '#ffffff' });
+        $previewMessage.css({
+          color: textVal
+        });
+
+        const acceptTextColor = getContrastColor(acceptVal);
+        $previewAccept.css({
+          background: acceptVal,
+          color: acceptTextColor
+        });
 
         const rejectStyle = currentRejectStyle();
         $previewBanner.attr('data-reject-style', rejectStyle);
         if (rejectStyle === 'filled') {
-          $previewReject.css({ background: $rejectColor.val(), color: $textColor.val(), border: 'none' });
+          const rejectTextColor = getContrastColor(rejectVal);
+          $previewReject.css({
+            background: rejectVal,
+            color: rejectTextColor,
+            border: 'none'
+          });
         } else {
-          $previewReject.css({ background: 'transparent', color: $rejectColor.val(), border: '1px solid ' + $rejectColor.val() });
+          $previewReject.css({
+            background: 'transparent',
+            color: rejectVal,
+            border: '1px solid ' + rejectVal
+          });
         }
 
         $previewBanner.removeClass('ega-layout-bar ega-layout-corner');
@@ -147,7 +225,7 @@
         $previewMessage.text($message.val().trim() !== '' ? $message.val() : egaBannerDesign.defaults.message);
         $previewAccept.text($acceptLabel.val().trim() !== '' ? $acceptLabel.val() : egaBannerDesign.defaults.acceptLabel);
         $previewReject.text($rejectLabel.val().trim() !== '' ? $rejectLabel.val() : egaBannerDesign.defaults.rejectLabel);
-      }
+      };
 
       $bgColor.add($textColor).add($acceptColor).add($rejectColor).add($message).add($acceptLabel).add($rejectLabel).on('input', syncPreview);
       $layoutRadios.on('change', syncPreview);
@@ -189,6 +267,14 @@
       });
 
       syncPreview();
+    }
+
+    // Check initial hash on load
+    const currentHash = window.location.hash.toLowerCase();
+    if (currentHash === '#banner-design' || currentHash === '#design' || currentHash === '#banner') {
+      activateTab('design', false);
+    } else {
+      activateTab('settings', false);
     }
 
     // Event tracking cards click handler
@@ -242,6 +328,13 @@
     $('form.ega-settings-form').on('submit', function () {
       formDirty = false;
       $saveBtn.html('<span class="dashicons dashicons-update spin" style="margin-right:6px;"></span> Saving...');
+
+      const $referer = $('input[name="_wp_http_referer"]');
+      if ($referer.length) {
+        const baseUrl = $referer.val().split('#')[0];
+        const isDesignTab = $tabTriggerDesign.hasClass('is-active');
+        $referer.val(baseUrl + (isDesignTab ? '#banner-design' : '#settings'));
+      }
     });
 
     // Show toast when settings updated

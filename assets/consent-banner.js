@@ -59,11 +59,15 @@
     function initFallbackBanner() {
         var banner = document.getElementById('ega-consent-banner');
         var manageBtn = document.getElementById('ega-consent-manage');
+        var acceptBtn = document.getElementById('ega-consent-accept');
+        var rejectBtn = document.getElementById('ega-consent-reject');
+
+        if (!banner) {
+            return;
+        }
 
         function showManageButton() {
-            if (banner) {
-                banner.setAttribute('hidden', 'hidden');
-            }
+            banner.setAttribute('hidden', 'hidden');
             if (manageBtn) {
                 manageBtn.removeAttribute('hidden');
             }
@@ -73,51 +77,51 @@
             if (manageBtn) {
                 manageBtn.setAttribute('hidden', 'hidden');
             }
-            if (banner) {
-                banner.removeAttribute('hidden');
-            }
+            banner.removeAttribute('hidden');
         }
 
+        // Always bind manage button event listener
         if (manageBtn) {
-            manageBtn.addEventListener('click', function () {
+            manageBtn.addEventListener('click', function (e) {
+                e.preventDefault();
                 showBanner();
             });
         }
 
+        // Always bind accept button event listener
+        if (acceptBtn) {
+            acceptBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                setCookie(COOKIE_NAME, 'granted');
+                updateConsent(true);
+                showManageButton();
+            });
+        }
+
+        // Always bind reject button event listener
+        if (rejectBtn) {
+            rejectBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                setCookie(COOKIE_NAME, 'denied');
+                updateConsent(false);
+                showManageButton();
+            });
+        }
+
+        // Check existing consent cookie
         var existing = getCookie(COOKIE_NAME);
         if (existing === 'granted') {
             updateConsent(true);
             showManageButton();
-            return;
-        }
-        if (existing === 'denied') {
-            showManageButton();
-            return;
-        }
-
-        if (!banner) {
-            return;
-        }
-
-        banner.removeAttribute('hidden');
-
-        var acceptBtn = document.getElementById('ega-consent-accept');
-        var rejectBtn = document.getElementById('ega-consent-reject');
-
-        acceptBtn.addEventListener('click', function () {
-            setCookie(COOKIE_NAME, 'granted');
-            updateConsent(true);
-            showManageButton();
-        });
-
-        rejectBtn.addEventListener('click', function () {
-            setCookie(COOKIE_NAME, 'denied');
+        } else if (existing === 'denied') {
             updateConsent(false);
             showManageButton();
-        });
+        } else {
+            showBanner();
+        }
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    function init() {
         if (detectComplianz()) {
             bindComplianz();
             return;
@@ -127,5 +131,11 @@
             return;
         }
         initFallbackBanner();
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 })();

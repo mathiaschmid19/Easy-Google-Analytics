@@ -26,18 +26,21 @@ class EGA_Settings {
             return;
         }
 
+        $css_ver = file_exists(EGA_PLUGIN_DIR . 'assets/admin.css') ? (string) filemtime(EGA_PLUGIN_DIR . 'assets/admin.css') : EGA_VERSION;
+        $js_ver  = file_exists(EGA_PLUGIN_DIR . 'assets/admin.js') ? (string) filemtime(EGA_PLUGIN_DIR . 'assets/admin.js') : EGA_VERSION;
+
         wp_enqueue_style(
             'ega-admin-styles',
             EGA_PLUGIN_URL . 'assets/admin.css',
             array(),
-            '2.1'
+            $css_ver
         );
 
         wp_enqueue_script(
             'ega-admin-scripts',
             EGA_PLUGIN_URL . 'assets/admin.js',
             array('jquery'),
-            '2.1',
+            $js_ver,
             true
         );
 
@@ -323,7 +326,7 @@ class EGA_Settings {
             <div class="ega-header-banner">
                 <div class="ega-header-content">
                     <div class="ega-header-badge-group">
-                        <span class="ega-version-tag">Version 2.0</span>
+                        <span class="ega-version-tag">Version <?php echo esc_html(defined('EGA_VERSION') ? EGA_VERSION : '2.2'); ?></span>
                         <span class="ega-pill-tag">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                             Consent Mode v2
@@ -385,13 +388,36 @@ class EGA_Settings {
             <form method="post" action="options.php" class="ega-settings-form">
                 <?php settings_fields('for_you_google_analytics_options'); ?>
 
-                <!-- Tabs -->
-                <div class="ega-tabs-nav" role="tablist">
-                    <button type="button" id="ega-tab-trigger-settings" class="ega-tab-trigger is-active" role="tab" aria-selected="true" aria-controls="ega-tab-panel-settings">
-                        <?php esc_html_e('Settings', 'for-you-google-analytics'); ?>
+                <!-- Tabs Navigation -->
+                <div class="ega-tabs-nav" role="tablist" aria-label="<?php esc_attr_e('Settings Navigation', 'for-you-google-analytics'); ?>">
+                    <button type="button" id="ega-tab-trigger-settings" class="ega-tab-trigger is-active" role="tab" aria-selected="true" aria-controls="ega-tab-panel-settings" tabindex="0">
+                        <span class="ega-tab-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="4" y1="21" x2="4" y2="14"/>
+                                <line x1="4" y1="10" x2="4" y2="3"/>
+                                <line x1="12" y1="21" x2="12" y2="12"/>
+                                <line x1="12" y1="8" x2="12" y2="3"/>
+                                <line x1="20" y1="21" x2="20" y2="16"/>
+                                <line x1="20" y1="12" x2="20" y2="3"/>
+                                <line x1="1" y1="14" x2="7" y2="14"/>
+                                <line x1="9" y1="8" x2="15" y2="8"/>
+                                <line x1="17" y1="16" x2="23" y2="16"/>
+                            </svg>
+                        </span>
+                        <span class="ega-tab-text"><?php esc_html_e('Settings', 'for-you-google-analytics'); ?></span>
                     </button>
-                    <button type="button" id="ega-tab-trigger-design" class="ega-tab-trigger" role="tab" aria-selected="false" aria-controls="ega-tab-panel-design">
-                        <?php esc_html_e('Banner Design', 'for-you-google-analytics'); ?>
+                    <button type="button" id="ega-tab-trigger-design" class="ega-tab-trigger" role="tab" aria-selected="false" aria-controls="ega-tab-panel-design" tabindex="-1">
+                        <span class="ega-tab-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="13.5" cy="6.5" r=".5"/>
+                                <circle cx="17.5" cy="10.5" r=".5"/>
+                                <circle cx="8.5" cy="7.5" r=".5"/>
+                                <circle cx="6.5" cy="12.5" r=".5"/>
+                                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C22 6.012 17.461 2 12 2z"/>
+                            </svg>
+                        </span>
+                        <span class="ega-tab-text"><?php esc_html_e('Banner Design', 'for-you-google-analytics'); ?></span>
+                        <span class="ega-tab-badge"><?php esc_html_e('Live Preview', 'for-you-google-analytics'); ?></span>
                     </button>
                 </div>
 
@@ -514,7 +540,7 @@ class EGA_Settings {
 
                                 <div class="ega-callout">
                                     <div class="ega-callout-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
                                     </div>
                                     <div>
                                         <strong><?php esc_html_e('Smart CMP Detection: ', 'for-you-google-analytics'); ?></strong>
@@ -526,7 +552,7 @@ class EGA_Settings {
                                 <div id="ega-consent-preview" class="ega-preview-box" <?php echo ($consent_banner !== '1') ? 'style="display:none;"' : ''; ?>>
                                     <div class="ega-preview-header">
                                         <span><?php esc_html_e('Live Banner Preview (Frontend)', 'for-you-google-analytics'); ?></span>
-                                        <span style="color:#34d399;font-size:10px;">&#9679; Active</span>
+                                        <span style="color:#4ade80;font-size:10px;">&#9679; Active</span>
                                     </div>
                                     <div class="ega-preview-banner">
                                         <p><?php esc_html_e('This site uses cookies to analyze traffic via Google Analytics. Do you accept analytics cookies?', 'for-you-google-analytics'); ?></p>
@@ -632,7 +658,7 @@ class EGA_Settings {
 
                                 <div class="ega-callout accent">
                                     <div class="ega-callout-icon">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8a6114" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                                     </div>
                                     <div>
                                         <strong><?php esc_html_e('Consent Required: ', 'for-you-google-analytics'); ?></strong>
@@ -660,7 +686,7 @@ class EGA_Settings {
                         <!-- Diagnostics Widget -->
                         <div class="ega-sidebar-card">
                             <div class="ega-sidebar-header">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
                                 <h3 class="ega-sidebar-title"><?php esc_html_e('Live Diagnostics', 'for-you-google-analytics'); ?></h3>
                             </div>
                             <div class="ega-sidebar-body">
@@ -698,7 +724,7 @@ class EGA_Settings {
                         <!-- Quick Setup Checklist -->
                         <div class="ega-sidebar-card">
                             <div class="ega-sidebar-header">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#15803d" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
                                 <h3 class="ega-sidebar-title"><?php esc_html_e('Setup Checklist', 'for-you-google-analytics'); ?></h3>
                             </div>
                             <div class="ega-sidebar-body">
@@ -806,9 +832,9 @@ class EGA_Settings {
                         <div class="ega-palette-swatches">
                             <?php foreach ($palettes as $key => $preset) : ?>
                                 <button type="button" class="ega-palette-swatch <?php echo ($palette === $key) ? 'is-active' : ''; ?>" data-palette="<?php echo esc_attr($key); ?>">
-                                    <span class="ega-palette-swatch-preview" style="background:<?php echo esc_attr($preset['bg']); ?>;">
+                                    <span class="ega-palette-swatch-preview" style="background:<?php echo esc_attr($preset['bg']); ?>;<?php echo ($preset['bg'] === '#ffffff' || $preset['bg'] === '#f8f9fa') ? 'border:1px solid #e2e8f0;' : ''; ?>">
                                         <span style="background:<?php echo esc_attr($preset['accept']); ?>;"></span>
-                                        <span style="background:<?php echo esc_attr($preset['reject']); ?>;"></span>
+                                        <span style="background:<?php echo ($preset['reject_style'] === 'outline') ? 'transparent' : esc_attr($preset['reject']); ?>;border:1px solid <?php echo esc_attr($preset['reject']); ?>;"></span>
                                     </span>
                                     <span class="ega-palette-swatch-label"><?php echo esc_html(ucwords(str_replace('-', ' ', $key))); ?></span>
                                 </button>
@@ -899,7 +925,7 @@ class EGA_Settings {
             <div class="ega-sidebar-column">
                 <div class="ega-sidebar-card">
                     <div class="ega-sidebar-header">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a56db" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                         <h3 class="ega-sidebar-title"><?php esc_html_e('Live Preview', 'for-you-google-analytics'); ?></h3>
                     </div>
                     <div class="ega-sidebar-body">

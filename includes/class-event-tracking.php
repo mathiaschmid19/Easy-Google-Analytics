@@ -30,11 +30,13 @@ class EGA_Event_Tracking {
         // is intentionally not gated here — see the "Enable event tracking"
         // description in EGA_Settings::event_tracking_field() for the
         // admin-facing guidance instead.
+        $js_ver = file_exists(EGA_PLUGIN_DIR . 'assets/tracking.js') ? (string) filemtime(EGA_PLUGIN_DIR . 'assets/tracking.js') : (defined('EGA_VERSION') ? EGA_VERSION : '2.2');
+
         wp_enqueue_script(
             'ega-tracking',
             EGA_PLUGIN_URL . 'assets/tracking.js',
             array(),
-            '2.0',
+            $js_ver,
             true
         );
 

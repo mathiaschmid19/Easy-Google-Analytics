@@ -36,11 +36,13 @@ class EGA_Admin_Notice {
             return;
         }
 
+        $js_ver = file_exists(EGA_PLUGIN_DIR . 'assets/admin-notice.js') ? (string) filemtime(EGA_PLUGIN_DIR . 'assets/admin-notice.js') : (defined('EGA_VERSION') ? EGA_VERSION : '2.2');
+
         wp_enqueue_script(
             'ega-admin-notice',
             EGA_PLUGIN_URL . 'assets/admin-notice.js',
             array(),
-            '2.0',
+            $js_ver,
             true
         );
 
