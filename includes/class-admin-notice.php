@@ -16,7 +16,7 @@ class EGA_Admin_Notice {
     }
 
     private static function should_show($hook) {
-        if ($hook === 'settings_page_for_you_google_analytics') {
+        if ($hook === 'settings_page_for_you_google_analytics' || $hook === 'toplevel_page_for_you_google_analytics') {
             return false;
         }
 
@@ -61,7 +61,7 @@ class EGA_Admin_Notice {
             return;
         }
 
-        $settings_url = admin_url('options-general.php?page=for_you_google_analytics');
+        $settings_url = admin_url('admin.php?page=for_you_google_analytics');
         ?>
         <div class="notice notice-warning is-dismissible ega-config-notice">
             <p>

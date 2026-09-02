@@ -9,20 +9,33 @@ class EGA_Settings {
         add_action('admin_menu', array(__CLASS__, 'menu'));
         add_action('admin_init', array(__CLASS__, 'register_settings'));
         add_action('admin_enqueue_scripts', array(__CLASS__, 'enqueue_admin_assets'));
+        add_filter('plugin_action_links_' . plugin_basename(EGA_PLUGIN_DIR . 'Easy Google Analytics.php'), array(__CLASS__, 'plugin_action_links'));
     }
 
     public static function menu() {
-        add_options_page(
-            'Google Analytics Settings (GA4)',
-            'Google Analytics (GA4)',
+        add_menu_page(
+            __('Google Analytics Settings (GA4)', 'for-you-google-analytics'),
+            __('Google Analytics', 'for-you-google-analytics'),
             'manage_options',
             'for_you_google_analytics',
-            array(__CLASS__, 'render_page')
+            array(__CLASS__, 'render_page'),
+            'dashicons-chart-bar',
+            100
         );
     }
 
+    public static function plugin_action_links($links) {
+        $settings_link = sprintf(
+            '<a href="%s">%s</a>',
+            esc_url(admin_url('admin.php?page=for_you_google_analytics')),
+            esc_html__('Settings', 'for-you-google-analytics')
+        );
+        array_unshift($links, $settings_link);
+        return $links;
+    }
+
     public static function enqueue_admin_assets($hook) {
-        if ($hook !== 'settings_page_for_you_google_analytics') {
+        if ($hook !== 'toplevel_page_for_you_google_analytics' && $hook !== 'settings_page_for_you_google_analytics') {
             return;
         }
 
